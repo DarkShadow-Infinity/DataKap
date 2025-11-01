@@ -103,6 +103,15 @@ class RoleOptionsPage extends GetView<AuthController> {
                     arguments: {'role': role},
                   ),
                 ),
+                const SizedBox(height: 16),
+                _OptionCard(
+                  title: 'Sincronizar registros',
+                  description:
+                      'Envía los registros guardados en el dispositivo cuando recuperes la conexión.',
+                  icon: Icons.sync,
+                  color: Colors.orange,
+                  onTap: () => Get.toNamed(AppRoutes.registrationSync),
+                ),
                 const SizedBox(height: 32),
                 Container(
                   padding: const EdgeInsets.all(16),

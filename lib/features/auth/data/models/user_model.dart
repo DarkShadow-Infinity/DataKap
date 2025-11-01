@@ -53,4 +53,12 @@ class UserModel extends UserEntity {
       'role': fallbackRole,
     });
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'uid': uid,
+      'email': email,
+      'role': role.name,
+    };
+  }
 }

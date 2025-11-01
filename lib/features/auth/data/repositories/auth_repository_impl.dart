@@ -1,5 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:datakap/core/error/failures.dart';
+import 'package:datakap/core/network/network_info.dart';
+import 'package:datakap/features/auth/data/data_sources/auth_local_data_source.dart';
 import 'package:datakap/features/auth/data/data_sources/auth_remote_data_source.dart';
 import 'package:datakap/features/auth/domain/entities/user_entity.dart';
 import 'package:datakap/features/auth/domain/repositories/auth_repository.dart';
@@ -10,9 +12,15 @@ import 'package:flutter/foundation.dart';
 // definido en la capa de Dominio (AuthRepository).
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
+  final AuthLocalDataSource localDataSource;
+  final NetworkInfo networkInfo;
+  final FirebaseAuth firebaseAuth;
 
   AuthRepositoryImpl({
     required this.remoteDataSource,
+    required this.localDataSource,
+    required this.networkInfo,
+    required this.firebaseAuth,
   });
 
   // Escucha los cambios de estado de autenticación (logueado/deslogueado).
@@ -25,6 +33,29 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, UserEntity>> login(String email, String password) async {
     try {
+      final hasConnection = await networkInfo.isConnected;
+      if (!hasConnection) {
+        final cached = await localDataSource.getUserByEmail(email);
+        if (cached != null) {
+          return Right(cached);
+        }
+
+        final currentUser = firebaseAuth.currentUser;
+        if (currentUser != null) {
+          final cachedByUid = await localDataSource.getUserByUid(currentUser.uid);
+          if (cachedByUid != null) {
+            return Right(cachedByUid);
+          }
+        }
+
+        return Left(
+          ServerFailure(
+            message:
+                'Sin conexión a internet. Conéctate al menos una vez para validar tus credenciales.',
+          ),
+        );
+      }
+
       // Intenta iniciar sesión a través de la fuente de datos remota
       final userModel = await remoteDataSource.signIn(email, password);
 

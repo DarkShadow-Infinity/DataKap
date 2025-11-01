@@ -1,6 +1,12 @@
+import 'dart:async';
+
+import 'package:datakap/core/network/network_info.dart';
+import 'package:datakap/features/auth/domain/entities/user_entity.dart';
+import 'package:datakap/features/registration/domain/entities/registration_entity.dart';
+import 'package:datakap/features/registration/domain/use_cases/registration_request.dart';
+import 'package:datakap/features/registration/domain/use_cases/submit_registration_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:datakap/features/auth/domain/entities/user_entity.dart';
 
 class RegistrationFieldConfig {
   const RegistrationFieldConfig({
@@ -20,7 +26,10 @@ class RoleRegistrationController extends GetxController {
   RoleRegistrationController({
     required this.role,
     required this.requiresPhoto,
-  });
+    required SubmitRegistrationUseCase submitRegistrationUseCase,
+    required NetworkInfo networkInfo,
+  })  : _submitRegistrationUseCase = submitRegistrationUseCase,
+        _networkInfo = networkInfo;
 
   final UserRole role;
   final bool requiresPhoto;
@@ -28,6 +37,7 @@ class RoleRegistrationController extends GetxController {
   final formKey = GlobalKey<FormState>();
   final isSubmitting = false.obs;
   final hasPhoto = false.obs;
+  final isOnline = true.obs;
 
   late final Map<String, TextEditingController> _controllers;
 
@@ -35,6 +45,10 @@ class RoleRegistrationController extends GetxController {
 
   String get roleLabel =>
       role == UserRole.leader ? 'líder' : 'promovido';
+
+  StreamSubscription<bool>? _connectivitySubscription;
+  final SubmitRegistrationUseCase _submitRegistrationUseCase;
+  final NetworkInfo _networkInfo;
 
   static const List<RegistrationFieldConfig> fieldConfigs = [
     RegistrationFieldConfig(
@@ -105,6 +119,7 @@ class RoleRegistrationController extends GetxController {
       for (final config in fieldConfigs)
         config.key: TextEditingController(),
     };
+    _initializeConnectivity();
   }
 
   @override
@@ -112,7 +127,14 @@ class RoleRegistrationController extends GetxController {
     for (final controller in _controllers.values) {
       controller.dispose();
     }
+    _connectivitySubscription?.cancel();
     super.onClose();
+  }
+
+  Future<void> _initializeConnectivity() async {
+    isOnline.value = await _networkInfo.isConnected;
+    _connectivitySubscription =
+        _networkInfo.onStatusChange.listen((status) => isOnline.value = status);
   }
 
   void capturePhoto() {
@@ -146,17 +168,43 @@ class RoleRegistrationController extends GetxController {
     }
 
     isSubmitting.value = true;
-    await Future.delayed(const Duration(milliseconds: 600));
-    isSubmitting.value = false;
+    try {
+      final request = RegistrationRequest(
+        role: role,
+        fields: _buildFieldsMap(),
+        requiresPhoto: requiresPhoto,
+        photoPath: requiresPhoto ? 'ine_photo_${DateTime.now().millisecondsSinceEpoch}' : null,
+      );
 
-    Get.snackbar(
-      'Registro enviado',
-      'El ${roleLabel.toLowerCase()} ha sido registrado correctamente.',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.green.shade600,
-      colorText: Colors.white,
-    );
+      final result = await _submitRegistrationUseCase.execute(request);
+      result.fold(
+        (failure) {
+          Get.snackbar(
+            'Error al registrar',
+            failure.message,
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.redAccent,
+            colorText: Colors.white,
+          );
+        },
+        (registration) {
+          _handleSuccessfulSubmission(registration);
+        },
+      );
+    } finally {
+      isSubmitting.value = false;
+    }
+  }
 
+  Map<String, String> _buildFieldsMap() {
+    return {
+      for (final entry in _controllers.entries)
+        entry.key: entry.value.text.trim(),
+      'rol': role.name,
+    };
+  }
+
+  void _handleSuccessfulSubmission(RegistrationEntity registration) {
     for (final controller in _controllers.values) {
       controller.clear();
     }
@@ -164,15 +212,46 @@ class RoleRegistrationController extends GetxController {
     if (requiresPhoto) {
       hasPhoto.value = false;
     }
+
+    final title = registration.isSynced ? 'Registro sincronizado' : 'Registro guardado';
+    final message = registration.isSynced
+        ? 'El ${roleLabel.toLowerCase()} se registró y sincronizó correctamente.'
+        : 'El ${roleLabel.toLowerCase()} se guardó en el dispositivo. Podrás sincronizarlo cuando tengas internet.';
+
+    Get.snackbar(
+      title,
+      message,
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor:
+          registration.isSynced ? Colors.green.shade600 : Colors.orange.shade600,
+      colorText: Colors.white,
+      duration: const Duration(seconds: 4),
+    );
   }
 }
 
 class IneRegistrationController extends RoleRegistrationController {
-  IneRegistrationController({required UserRole role})
-      : super(role: role, requiresPhoto: true);
+  IneRegistrationController({
+    required UserRole role,
+    required SubmitRegistrationUseCase submitRegistrationUseCase,
+    required NetworkInfo networkInfo,
+  }) : super(
+          role: role,
+          requiresPhoto: true,
+          submitRegistrationUseCase: submitRegistrationUseCase,
+          networkInfo: networkInfo,
+        );
 }
 
 class ManualRegistrationController extends RoleRegistrationController {
-  ManualRegistrationController({required UserRole role})
-      : super(role: role, requiresPhoto: false);
+  ManualRegistrationController({
+    required UserRole role,
+    required SubmitRegistrationUseCase submitRegistrationUseCase,
+    required NetworkInfo networkInfo,
+  }) : super(
+          role: role,
+          requiresPhoto: false,
+          submitRegistrationUseCase: submitRegistrationUseCase,
+          networkInfo: networkInfo,
+        );
 }

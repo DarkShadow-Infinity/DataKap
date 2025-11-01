@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:datakap/features/auth/data/data_sources/auth_local_data_source.dart';
 import 'package:datakap/features/auth/data/models/user_model.dart';
 import 'package:datakap/features/auth/domain/entities/user_entity.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -18,7 +19,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final FirebaseAuth auth;
   final FirebaseFirestore firestore;
 
-  AuthRemoteDataSourceImpl({required this.auth, required this.firestore});
+  AuthRemoteDataSourceImpl({
+    required this.auth,
+    required this.firestore,
+    required this.localDataSource,
+  });
 
   // Stream que escucha los cambios de autenticación de Firebase
   @override
@@ -29,21 +34,19 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       }
 
       try {
-        // Si hay usuario, buscamos su rol en Firestore
-        final userData = await _getUserData(user.uid);
-        return UserModel.fromFirebaseUser(user, userData) ?? UserEntity.empty;
+        return _resolveUserModel(user);
       } on FirebaseException catch (e, stackTrace) {
         debugPrint(
           'FirebaseException while resolving auth state for ${user.uid}: '
           '${e.code} - ${e.message}\n$stackTrace',
         );
-        return UserEntity.empty;
+        return _fallbackToCachedUser(user.uid);
       } catch (e, stackTrace) {
         debugPrint(
           'Unknown error while resolving auth state for ${user.uid}: '
           '$e\n$stackTrace',
         );
-        return UserEntity.empty;
+        return _fallbackToCachedUser(user.uid);
       }
     });
   }
@@ -115,16 +118,24 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     final userData = await _getUserData(user.uid);
 
     final model = UserModel.fromFirebaseUser(user, userData);
-    if (model == null) {
-      // Mientras se define la estrategia de roles, asumimos acceso de administrador.
-      return UserModel(
-        uid: user.uid,
-        email: user.email ?? '',
-        role: UserRole.admin,
-      );
+    if (model != null) {
+      await localDataSource.cacheUser(model);
+      return model;
     }
 
-    return model;
+    final cached = await localDataSource.getUserByUid(user.uid);
+    if (cached != null) {
+      return cached;
+    }
+
+    // Mientras se define la estrategia de roles, asumimos acceso de administrador.
+    final fallback = UserModel(
+      uid: user.uid,
+      email: user.email ?? '',
+      role: UserRole.admin,
+    );
+    await localDataSource.cacheUser(fallback);
+    return fallback;
   }
 
   Future<User?> _waitForAuthenticatedUser() async {
@@ -160,4 +171,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
     return null;
   }
+
+  Future<UserEntity> _fallbackToCachedUser(String uid) async {
+    final cached = await localDataSource.getUserByUid(uid);
+    return cached ?? UserEntity.empty;
+  }
+
+  final AuthLocalDataSource localDataSource;
 }
