@@ -19,6 +19,10 @@ class AuthController extends GetxController {
 
   final AuthRepository _authRepository;
 
+  // Track whether we already redirected to a home route for the current session
+  bool _hasNavigatedToHome = false;
+  UserRole? _lastHomeRole;
+
   // El repositorio se inyecta gracias al AppBindings
   AuthController(this._authRepository);
 
@@ -42,8 +46,14 @@ class AuthController extends GetxController {
 
       // Lógica de navegación principal (redundante con AuthWrapper, pero útil para Get.toNamed)
       if (user.isNotEmpty) {
-        _redirectToHome(user.role);
+        final shouldRedirect =
+            !_hasNavigatedToHome || _lastHomeRole != user.role;
+        if (shouldRedirect) {
+          _redirectToHome(user.role);
+        }
       } else {
+        _hasNavigatedToHome = false;
+        _lastHomeRole = null;
         // Solo redirigir a login si ya se hizo el chequeo inicial
         if (isInitialCheckDone.value) {
           Get.offAllNamed(AppRoutes.login);
@@ -114,5 +124,7 @@ class AuthController extends GetxController {
     }
     // Usamos offAllNamed para eliminar todas las rutas anteriores y no permitir el back
     Get.offAllNamed(route);
+    _hasNavigatedToHome = true;
+    _lastHomeRole = role;
   }
 }
