@@ -66,8 +66,12 @@ class AuthController extends GetxController {
         return failure.props[0] as String;
       },
           (user) {
-        // Si tiene éxito, el stream de _listenToAuthState se dispara
-        // y se encarga de la navegación a la home.
+        // Guardamos el usuario inmediatamente y navegamos sin esperar el stream.
+        if (user.isNotEmpty) {
+          currentUser.value = user;
+          _redirectToHome(user.role);
+        }
+
         return null; // No hay error
       },
     );
