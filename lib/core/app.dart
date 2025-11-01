@@ -1,29 +1,40 @@
 // Este archivo maneja la inyección de dependencias (DI) y las rutas de GetX.
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 // -- Importación de Capa de Datos y Dominio --
 // Asegúrate de que estas rutas coincidan con tu estructura
+import 'package:datakap/core/network/network_info.dart';
+import 'package:datakap/features/auth/data/data_sources/auth_local_data_source.dart';
 import 'package:datakap/features/auth/data/data_sources/auth_remote_data_source.dart';
 import 'package:datakap/features/auth/data/repositories/auth_repository_impl.dart';
-import 'package:datakap/features/auth/domain/repositories/auth_repository.dart';
 import 'package:datakap/features/auth/domain/entities/user_entity.dart';
+import 'package:datakap/features/auth/domain/repositories/auth_repository.dart';
+import 'package:datakap/features/registration/data/data_sources/registration_local_data_source.dart';
+import 'package:datakap/features/registration/data/data_sources/registration_remote_data_source.dart';
+import 'package:datakap/features/registration/data/repositories/registration_repository_impl.dart';
+import 'package:datakap/features/registration/domain/repositories/registration_repository.dart';
+import 'package:datakap/features/registration/domain/use_cases/get_pending_registrations_use_case.dart';
+import 'package:datakap/features/registration/domain/use_cases/submit_registration_use_case.dart';
+import 'package:datakap/features/registration/domain/use_cases/sync_pending_registrations_use_case.dart';
 
 // -- Importación de Capa de Presentación (Vistas y Controlador) --
-import 'package:datakap/features/auth/presentation/manager/auth_controller.dart';
-import 'package:datakap/features/auth/presentation/pages/login_page.dart';
-import 'package:datakap/features/auth/presentation/pages/home_admin_page.dart';
-import 'package:datakap/features/auth/presentation/pages/role_options_page.dart';
-import 'package:datakap/features/auth/presentation/pages/ine_registration_page.dart';
-import 'package:datakap/features/auth/presentation/pages/manual_registration_page.dart';
-import 'package:datakap/features/auth/presentation/pages/admin_add_promoter_page.dart';
-import 'package:datakap/features/auth/presentation/pages/admin_add_leader_page.dart';
-import 'package:datakap/features/auth/presentation/manager/role_registration_controller.dart';
 import 'package:datakap/features/auth/presentation/manager/admin_user_form_controller.dart';
-
+import 'package:datakap/features/auth/presentation/manager/auth_controller.dart';
+import 'package:datakap/features/auth/presentation/manager/role_registration_controller.dart';
+import 'package:datakap/features/auth/presentation/pages/admin_add_leader_page.dart';
+import 'package:datakap/features/auth/presentation/pages/admin_add_promoter_page.dart';
+import 'package:datakap/features/auth/presentation/pages/home_admin_page.dart';
+import 'package:datakap/features/auth/presentation/pages/ine_registration_page.dart';
+import 'package:datakap/features/auth/presentation/pages/login_page.dart';
+import 'package:datakap/features/auth/presentation/pages/manual_registration_page.dart';
+import 'package:datakap/features/auth/presentation/pages/role_options_page.dart';
+import 'package:datakap/features/registration/presentation/manager/registration_sync_controller.dart';
+import 'package:datakap/features/registration/presentation/pages/registration_sync_page.dart';
 
 // ==========================================================
 // 1. GESTIÓN DE DEPENDENCIAS (Inyección con GetX)
@@ -35,25 +46,65 @@ class AppBindings extends Bindings {
     // DEPENDENCIAS DE AUTENTICACIÓN
     // ----------------------------------------------------------------
 
-    // Core de Firebase: Instancias de servicios
+    // Core de Firebase y conectividad
     Get.lazyPut<FirebaseAuth>(() => FirebaseAuth.instance, fenix: true);
     Get.lazyPut<FirebaseFirestore>(() => FirebaseFirestore.instance, fenix: true);
+    Get.lazyPut<Connectivity>(() => Connectivity(), fenix: true);
+    Get.lazyPut<NetworkInfo>(
+      () => ConnectivityNetworkInfo(connectivity: Get.find()),
+      fenix: true,
+    );
 
     // Data Source: Usa las instancias de Firebase
+    Get.lazyPut<AuthLocalDataSource>(() => AuthLocalDataSourceImpl(), fenix: true);
     Get.lazyPut<AuthRemoteDataSource>(
-            () => AuthRemoteDataSourceImpl(
-          auth: Get.find(),
-          firestore: Get.find(),
-        ),
-        fenix: true
+      () => AuthRemoteDataSourceImpl(
+        auth: Get.find(),
+        firestore: Get.find(),
+        localDataSource: Get.find(),
+      ),
+      fenix: true,
     );
 
     // Repository: Usa el DataSource y el Contrato
     Get.lazyPut<AuthRepository>(
-            () => AuthRepositoryImpl(
-          remoteDataSource: Get.find(),
-        ),
-        fenix: true
+      () => AuthRepositoryImpl(
+        remoteDataSource: Get.find(),
+        localDataSource: Get.find(),
+        networkInfo: Get.find(),
+        firebaseAuth: Get.find(),
+      ),
+      fenix: true,
+    );
+
+    // Registro offline/online
+    Get.lazyPut<RegistrationLocalDataSource>(
+      () => RegistrationLocalDataSourceImpl(),
+      fenix: true,
+    );
+    Get.lazyPut<RegistrationRemoteDataSource>(
+      () => RegistrationRemoteDataSourceImpl(firestore: Get.find()),
+      fenix: true,
+    );
+    Get.lazyPut<RegistrationRepository>(
+      () => RegistrationRepositoryImpl(
+        remoteDataSource: Get.find(),
+        localDataSource: Get.find(),
+        networkInfo: Get.find(),
+      ),
+      fenix: true,
+    );
+    Get.lazyPut<SubmitRegistrationUseCase>(
+      () => SubmitRegistrationUseCase(Get.find()),
+      fenix: true,
+    );
+    Get.lazyPut<GetPendingRegistrationsUseCase>(
+      () => GetPendingRegistrationsUseCase(Get.find()),
+      fenix: true,
+    );
+    Get.lazyPut<SyncPendingRegistrationsUseCase>(
+      () => SyncPendingRegistrationsUseCase(Get.find()),
+      fenix: true,
     );
 
     // Controller: Usa el Repository (la lógica de negocio)
@@ -73,6 +124,7 @@ class AppRoutes {
   static const String homeLeader = '/home/leader';
   static const String ineRegistration = '/registration/ine';
   static const String manualRegistration = '/registration/manual';
+  static const String registrationSync = '/registration/sync';
   static const String adminAddPromoter = '/admin/promoters/add';
   static const String adminAddLeader = '/admin/leaders/add';
 }
@@ -113,7 +165,13 @@ class AppPages {
       binding: BindingsBuilder(() {
         final args = Get.arguments as Map<String, dynamic>?;
         final role = args?['role'] as UserRole? ?? UserRole.promoter;
-        Get.put(IneRegistrationController(role: role));
+        Get.put(
+          IneRegistrationController(
+            role: role,
+            submitRegistrationUseCase: Get.find(),
+            networkInfo: Get.find(),
+          ),
+        );
       }),
     ),
 
@@ -123,7 +181,27 @@ class AppPages {
       binding: BindingsBuilder(() {
         final args = Get.arguments as Map<String, dynamic>?;
         final role = args?['role'] as UserRole? ?? UserRole.promoter;
-        Get.put(ManualRegistrationController(role: role));
+        Get.put(
+          ManualRegistrationController(
+            role: role,
+            submitRegistrationUseCase: Get.find(),
+            networkInfo: Get.find(),
+          ),
+        );
+      }),
+    ),
+
+    GetPage(
+      name: AppRoutes.registrationSync,
+      page: () => const RegistrationSyncPage(),
+      binding: BindingsBuilder(() {
+        Get.put(
+          RegistrationSyncController(
+            getPendingRegistrationsUseCase: Get.find(),
+            syncPendingRegistrationsUseCase: Get.find(),
+            networkInfo: Get.find(),
+          ),
+        );
       }),
     ),
 
@@ -144,7 +222,6 @@ class AppPages {
     ),
   ];
 }
-
 
 // ==========================================================
 // 3. WRAPPER DE AUTENTICACIÓN (Redirige al usuario)

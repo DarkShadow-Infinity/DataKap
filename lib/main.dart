@@ -1,8 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:datakap/features/registration/data/models/registration_model.dart';
 // Importamos el archivo generado por flutterfire configure
 import 'firebase_options.dart';
-import 'package:get/get.dart';
 
 // Importamos el archivo donde definiremos las rutas y la DI
 import 'core/app.dart';
@@ -19,6 +21,11 @@ void main() async {
   } catch (e) {
     debugPrint("Error al inicializar Firebase: $e");
     // Opcional: mostrar una pantalla de error si Firebase falla
+  }
+
+  await Hive.initFlutter();
+  if (!Hive.isAdapterRegistered(RegistrationModelAdapter().typeId)) {
+    Hive.registerAdapter(RegistrationModelAdapter());
   }
 
   // 3. Iniciar la aplicación

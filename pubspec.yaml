@@ -69,6 +69,9 @@ dependencies:
   hive: ^2.2.3
   hive_flutter: ^1.1.0
 
+  # Formateo de fechas para la pantalla de sincronización
+  intl: ^0.19.0
+
   # json_annotation: Anotaciones para generar código de serialización JSON/Firestore
   json_annotation: ^4.8.1
 

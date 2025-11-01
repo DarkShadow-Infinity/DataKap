@@ -21,6 +21,7 @@ class HomeAdminPage extends GetView<AuthController> {
           )
         ],
       ),
+      drawer: const _AdminDrawer(),
       body: SafeArea(
         child: Obx(() {
           final user = controller.currentUser.value;
@@ -146,6 +147,60 @@ class HomeAdminPage extends GetView<AuthController> {
             ),
           );
         }),
+      ),
+    );
+  }
+}
+
+class _AdminDrawer extends StatelessWidget {
+  const _AdminDrawer();
+
+  @override
+  Widget build(BuildContext context) {
+    final authController = Get.find<AuthController>();
+    final email = authController.currentUser.value.email;
+
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          UserAccountsDrawerHeader(
+            accountName: const Text('Administrador'),
+            accountEmail: Text(email),
+            currentAccountPicture: const CircleAvatar(
+              backgroundColor: Colors.white,
+              child: Icon(Icons.admin_panel_settings, color: Colors.indigo),
+            ),
+            decoration: const BoxDecoration(color: Colors.indigo),
+          ),
+          ListTile(
+            leading: const Icon(Icons.dashboard),
+            title: const Text('Dashboard'),
+            onTap: () {
+              Get.back();
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.group),
+            title: const Text('Gestión de Usuarios'),
+            onTap: () {
+              Get.back();
+              Get.snackbar(
+                'Gestión de Usuarios',
+                'Selecciona "Agregar promovido" o "Agregar líder" en Acciones rápidas.',
+                snackPosition: SnackPosition.BOTTOM,
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.storage),
+            title: const Text('Ver Datos Recabados'),
+            onTap: () {
+              Get.back();
+              Get.toNamed(AppRoutes.registrationSync);
+            },
+          ),
+        ],
       ),
     );
   }

@@ -64,6 +64,32 @@ class ManualRegistrationPage extends GetView<ManualRegistrationController> {
                       ?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
+                Obx(() {
+                  if (controller.isOnline.value) {
+                    return const SizedBox.shrink();
+                  }
+                  return Container(
+                    padding: const EdgeInsets.all(12),
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.shade100,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Icon(Icons.wifi_off, color: Colors.orange),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Estás trabajando sin conexión. Los registros se guardarán en el dispositivo hasta que los sincronices.',
+                            style: TextStyle(color: Colors.orange),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
                 RegistrationFormFields(controller: controller),
                 const SizedBox(height: 24),
                 Obx(() => ElevatedButton.icon(
