@@ -3,7 +3,8 @@ import 'package:equatable/equatable.dart';
 // Define los roles posibles del usuario
 enum UserRole {
   admin,
-  recabador,
+  promoter,
+  leader,
   unknown, // Usado para usuarios logueados sin rol o error
 }
 

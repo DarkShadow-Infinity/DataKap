@@ -26,7 +26,14 @@ class UserModel extends UserEntity {
       case 'admin':
         return UserRole.admin;
       case 'recabador':
-        return UserRole.recabador;
+      case 'promovido':
+      case 'promotor':
+        return UserRole.promoter;
+      case 'lider':
+      case 'líder':
+      case 'lideres':
+      case 'líderes':
+        return UserRole.leader;
       default:
         return UserRole.unknown;
     }
@@ -38,7 +45,7 @@ class UserModel extends UserEntity {
       return null;
     }
 
-    final fallbackRole = userData?['role'] as String? ?? 'admin';
+    final fallbackRole = userData?['role'] as String? ?? 'promovido';
 
     return UserModel.fromJson({
       'uid': user.uid,

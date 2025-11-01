@@ -16,7 +16,13 @@ import 'package:datakap/features/auth/domain/entities/user_entity.dart';
 import 'package:datakap/features/auth/presentation/manager/auth_controller.dart';
 import 'package:datakap/features/auth/presentation/pages/login_page.dart';
 import 'package:datakap/features/auth/presentation/pages/home_admin_page.dart';
-import 'package:datakap/features/auth/presentation/pages/home_recabador_page.dart';
+import 'package:datakap/features/auth/presentation/pages/role_options_page.dart';
+import 'package:datakap/features/auth/presentation/pages/ine_registration_page.dart';
+import 'package:datakap/features/auth/presentation/pages/manual_registration_page.dart';
+import 'package:datakap/features/auth/presentation/pages/admin_add_promoter_page.dart';
+import 'package:datakap/features/auth/presentation/pages/admin_add_leader_page.dart';
+import 'package:datakap/features/auth/presentation/manager/role_registration_controller.dart';
+import 'package:datakap/features/auth/presentation/manager/admin_user_form_controller.dart';
 
 
 // ==========================================================
@@ -63,7 +69,12 @@ class AppRoutes {
   static const String initial = '/'; // La ruta inicial que manejará el AuthController
   static const String login = '/login';
   static const String homeAdmin = '/home/admin';
-  static const String homeRecabador = '/home/recabador';
+  static const String homePromoter = '/home/promoter';
+  static const String homeLeader = '/home/leader';
+  static const String ineRegistration = '/registration/ine';
+  static const String manualRegistration = '/registration/manual';
+  static const String adminAddPromoter = '/admin/promoters/add';
+  static const String adminAddLeader = '/admin/leaders/add';
 }
 
 class AppPages {
@@ -87,8 +98,49 @@ class AppPages {
     ),
 
     GetPage(
-      name: AppRoutes.homeRecabador,
-      page: () => const HomeRecabadorPage(),
+      name: AppRoutes.homePromoter,
+      page: () => const RoleOptionsPage(role: UserRole.promoter),
+    ),
+
+    GetPage(
+      name: AppRoutes.homeLeader,
+      page: () => const RoleOptionsPage(role: UserRole.leader),
+    ),
+
+    GetPage(
+      name: AppRoutes.ineRegistration,
+      page: () => const IneRegistrationPage(),
+      binding: BindingsBuilder(() {
+        final args = Get.arguments as Map<String, dynamic>?;
+        final role = args?['role'] as UserRole? ?? UserRole.promoter;
+        Get.put(IneRegistrationController(role: role));
+      }),
+    ),
+
+    GetPage(
+      name: AppRoutes.manualRegistration,
+      page: () => const ManualRegistrationPage(),
+      binding: BindingsBuilder(() {
+        final args = Get.arguments as Map<String, dynamic>?;
+        final role = args?['role'] as UserRole? ?? UserRole.promoter;
+        Get.put(ManualRegistrationController(role: role));
+      }),
+    ),
+
+    GetPage(
+      name: AppRoutes.adminAddPromoter,
+      page: () => const AdminAddPromoterPage(),
+      binding: BindingsBuilder(() {
+        Get.put(AdminPromoterFormController());
+      }),
+    ),
+
+    GetPage(
+      name: AppRoutes.adminAddLeader,
+      page: () => const AdminAddLeaderPage(),
+      binding: BindingsBuilder(() {
+        Get.put(AdminLeaderFormController());
+      }),
     ),
   ];
 }
@@ -127,8 +179,10 @@ class AuthWrapper extends GetView<AuthController> {
       // Redirigir según el rol
       if (user.role == UserRole.admin) {
         return const HomeAdminPage();
-      } else if (user.role == UserRole.recabador) {
-        return const HomeRecabadorPage();
+      } else if (user.role == UserRole.promoter) {
+        return const RoleOptionsPage(role: UserRole.promoter);
+      } else if (user.role == UserRole.leader) {
+        return const RoleOptionsPage(role: UserRole.leader);
       }
 
       // Fallback (debería ser manejado por el chequeo de "isEmpty")
