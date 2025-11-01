@@ -4,7 +4,6 @@ import 'package:datakap/features/auth/data/data_sources/auth_remote_data_source.
 import 'package:datakap/features/auth/domain/entities/user_entity.dart';
 import 'package:datakap/features/auth/domain/repositories/auth_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 
 // Implementación concreta del repositorio de autenticación, siguiendo el contrato
@@ -36,7 +35,7 @@ class AuthRepositoryImpl implements AuthRepository {
       return Left(AuthFailure(message: _mapFirebaseAuthException(e)));
     } on FirebaseException catch (e, stackTrace) {
       debugPrint('FirebaseException during login: ${e.code} - ${e.message}\n$stackTrace');
-      return Left(ServerFailure(message: e.message ?? 'Ocurrió un error con Firebase.'));
+      return Left(ServerFailure(message: _mapFirebaseException(e)));
     } on TypeError catch (e, stackTrace) {
       debugPrint('TypeError during login: $e\n$stackTrace');
       return Left(
@@ -81,6 +80,23 @@ class AuthRepositoryImpl implements AuthRepository {
       default:
         return exception.message ?? 'No se pudo iniciar sesión. Inténtalo nuevamente.';
     }
+  }
+
+  String _mapFirebaseException(FirebaseException exception) {
+    final message = exception.message ?? '';
+
+    if (exception.code == 'not-found' ||
+        message.contains('does not exist for project')) {
+      return 'La base de datos de Firestore no está configurada. Habilita Firestore en tu proyecto de Firebase.';
+    }
+
+    if (exception.code == 'unavailable') {
+      return 'El servicio de Firestore no está disponible en este momento. Verifica la configuración del proyecto en Firebase y tu conexión.';
+    }
+
+    return message.isNotEmpty
+        ? message
+        : 'Ocurrió un error con Firebase. Inténtalo nuevamente.';
   }
 
   // Implementación del método de logout definido en el contrato.
