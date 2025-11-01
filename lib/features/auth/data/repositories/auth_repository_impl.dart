@@ -39,7 +39,16 @@ class AuthRepositoryImpl implements AuthRepository {
       return Left(ServerFailure(message: e.message ?? 'Ocurrió un error con Firebase.'));
     } on TypeError catch (e, stackTrace) {
       debugPrint('TypeError during login: $e\n$stackTrace');
-      return Left(ServerFailure(message: 'Ocurrió un error al procesar la respuesta de inicio de sesión. Intenta actualizar la aplicación e inténtalo nuevamente.'));
+      return Left(
+        ServerFailure(
+          message:
+              'Ocurrió un error al procesar la respuesta de inicio de sesión. '
+              'Intenta actualizar la aplicación e inténtalo nuevamente.',
+        ),
+      );
+    } on StateError catch (e, stackTrace) {
+      debugPrint('StateError during login: ${e.message}\n$stackTrace');
+      return Left(DataFailure(message: e.message));
     } on AuthFailure catch (e) {
       // Captura fallas de autenticación específicas (ej: credenciales inválidas)
       return Left(AuthFailure(message: e.message));
