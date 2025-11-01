@@ -34,14 +34,16 @@ class UserModel extends UserEntity {
 
   // Mapea un objeto Firebase User (si existe)
   static UserModel? fromFirebaseUser(dynamic user, Map<String, dynamic>? userData) {
-    if (user == null || userData == null) {
+    if (user == null) {
       return null;
     }
+
+    final fallbackRole = userData?['role'] as String? ?? 'admin';
 
     return UserModel.fromJson({
       'uid': user.uid,
       'email': user.email ?? '',
-      'role': userData['role'] ?? 'unknown',
+      'role': fallbackRole,
     });
   }
 }
