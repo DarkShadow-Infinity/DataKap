@@ -1,7 +1,8 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:datakap/features/auth/data/models/user_model.dart';
 import 'package:datakap/features/auth/domain/entities/user_entity.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 
 // Contrato para la capa de datos
 abstract class AuthRemoteDataSource {
@@ -24,45 +25,87 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       if (user == null) {
         return UserEntity.empty;
       }
-      // Si hay usuario, buscamos su rol en Firestore
-      final userData = await _getUserData(user.uid);
-      return UserModel.fromFirebaseUser(user, userData) ?? UserEntity.empty;
+
+      try {
+        // Si hay usuario, buscamos su rol en Firestore
+        final userData = await _getUserData(user.uid);
+        return UserModel.fromFirebaseUser(user, userData) ?? UserEntity.empty;
+      } on FirebaseException catch (e, stackTrace) {
+        debugPrint(
+          'FirebaseException while resolving auth state for ${user.uid}: '
+          '${e.code} - ${e.message}\n$stackTrace',
+        );
+        return UserEntity.empty;
+      } catch (e, stackTrace) {
+        debugPrint(
+          'Unknown error while resolving auth state for ${user.uid}: '
+          '$e\n$stackTrace',
+        );
+        return UserEntity.empty;
+      }
     });
   }
 
   // Iniciar sesión con email y contraseña
   @override
   Future<UserModel> signIn(String email, String password) async {
-    final userCredential = await auth.signInWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
+    try {
+      final userCredential = await auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
 
-    final user = userCredential.user;
-    if (user == null) {
-      throw Exception('Login exitoso pero usuario es nulo.');
+      final user = userCredential.user;
+      if (user == null) {
+        throw StateError('Login exitoso pero usuario es nulo.');
+      }
+
+      return _resolveUserModel(user);
+    } on TypeError catch (error, stackTrace) {
+      debugPrint(
+        'TypeError from signInWithEmailAndPassword: $error\n$stackTrace',
+      );
+
+      final currentUser = auth.currentUser;
+      if (currentUser != null) {
+        debugPrint(
+          'Recovering session using currentUser (${currentUser.uid}) '
+          'after TypeError.',
+        );
+        return _resolveUserModel(currentUser);
+      }
+
+      rethrow;
     }
-
-    // Obtener los datos adicionales (rol) del usuario de Firestore
-    final userData = await _getUserData(user.uid);
-    if (userData == null) {
-      // Si el usuario existe en Auth pero no en Firestore, es un problema de Data
-      throw Exception('Datos de usuario (rol) no encontrados en Firestore.');
-    }
-
-    // Retornar el modelo completo
-    return UserModel.fromFirebaseUser(user, userData)!;
   }
 
   // Función auxiliar para obtener el rol del usuario de Firestore
   Future<Map<String, dynamic>?> _getUserData(String uid) async {
-    final docSnapshot = await firestore.collection('users').doc(uid).get();
-    return docSnapshot.data();
+    try {
+      final docSnapshot = await firestore.collection('users').doc(uid).get();
+      return docSnapshot.data();
+    } on FirebaseException {
+      rethrow;
+    }
   }
 
   // Cerrar sesión
   @override
   Future<void> signOut() async {
     await auth.signOut();
+  }
+
+  Future<UserModel> _resolveUserModel(User user) async {
+    final userData = await _getUserData(user.uid);
+    if (userData == null) {
+      throw StateError('Datos de usuario (rol) no encontrados en Firestore.');
+    }
+
+    final model = UserModel.fromFirebaseUser(user, userData);
+    if (model == null) {
+      throw StateError('No se pudo mapear la información del usuario.');
+    }
+
+    return model;
   }
 }
