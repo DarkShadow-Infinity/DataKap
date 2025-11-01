@@ -104,8 +104,10 @@ class AuthController extends GetxController {
     String route;
     if (role == UserRole.admin) {
       route = AppRoutes.homeAdmin;
-    } else if (role == UserRole.recabador) {
-      route = AppRoutes.homeRecabador;
+    } else if (role == UserRole.promoter) {
+      route = AppRoutes.homePromoter;
+    } else if (role == UserRole.leader) {
+      route = AppRoutes.homeLeader;
     } else {
       // Si el rol es desconocido, por seguridad volvemos a Login
       route = AppRoutes.login;
