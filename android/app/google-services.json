@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "361776729383",
+    "project_id": "datakap-374ec",
+    "storage_bucket": "datakap-374ec.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:361776729383:android:ec6be5eab15e2727776d02",
+        "android_client_info": {
+          "package_name": "com.afiliacionesmx.datakap.datakap"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDDhJ5WM_NKfz5s9DfKvM39mjpS1a87uAs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
