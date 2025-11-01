@@ -83,9 +83,23 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<Map<String, dynamic>?> _getUserData(String uid) async {
     try {
       final docSnapshot = await firestore.collection('users').doc(uid).get();
+      if (!docSnapshot.exists) {
+        return null;
+      }
+
       return docSnapshot.data();
-    } on FirebaseException {
-      rethrow;
+    } on FirebaseException catch (e, stackTrace) {
+      debugPrint(
+        'FirebaseException while fetching role data for $uid: '
+        '${e.code} - ${e.message}\n$stackTrace',
+      );
+      return null;
+    } catch (e, stackTrace) {
+      debugPrint(
+        'Unknown error while fetching role data for $uid: '
+        '$e\n$stackTrace',
+      );
+      return null;
     }
   }
 
