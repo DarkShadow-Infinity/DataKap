@@ -10,6 +10,7 @@ class LoginPage extends GetView<AuthController> {
     // Controladores de texto para los campos de email y password
     final emailController = TextEditingController();
     final passwordController = TextEditingController();
+    final isPasswordVisible = false.obs;
 
     // Variable para manejar el mensaje de error de Firebase
     final errorMessage = ''.obs;
@@ -71,11 +72,20 @@ class LoginPage extends GetView<AuthController> {
               // Campo de Contraseña
               const Text('Contraseña', style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
-              TextField(
+              Obx(() => TextField(
                 controller: passwordController,
-                obscureText: true,
-                decoration: inputDecoration.copyWith(hintText: 'Mínimo 6 caracteres'),
-              ),
+                obscureText: !isPasswordVisible.value,
+                decoration: inputDecoration.copyWith(
+                  hintText: 'Mínimo 6 caracteres',
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      isPasswordVisible.value ? Icons.visibility_off : Icons.visibility,
+                    ),
+                    onPressed: () => isPasswordVisible.toggle(),
+                    tooltip: isPasswordVisible.value ? 'Ocultar contraseña' : 'Mostrar contraseña',
+                  ),
+                ),
+              )),
               const SizedBox(height: 30),
 
               // Botón de Iniciar Sesión
