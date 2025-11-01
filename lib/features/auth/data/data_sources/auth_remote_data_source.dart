@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:datakap/features/auth/data/models/user_model.dart';
 import 'package:datakap/features/auth/domain/entities/user_entity.dart';
@@ -66,13 +68,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         'TypeError from signInWithEmailAndPassword: $error\n$stackTrace',
       );
 
-      final currentUser = auth.currentUser;
-      if (currentUser != null) {
+      final fallbackUser = auth.currentUser ?? await _waitForAuthenticatedUser();
+      if (fallbackUser != null) {
         debugPrint(
-          'Recovering session using currentUser (${currentUser.uid}) '
+          'Recovered session using fallback user (${fallbackUser.uid}) '
           'after TypeError.',
         );
-        return _resolveUserModel(currentUser);
+        return _resolveUserModel(fallbackUser);
       }
 
       rethrow;
@@ -123,5 +125,39 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     }
 
     return model;
+  }
+
+  Future<User?> _waitForAuthenticatedUser() async {
+    final recoveryStreams = <MapEntry<String, Stream<User?>>>[
+      MapEntry('authStateChanges', auth.authStateChanges()),
+      MapEntry('idTokenChanges', auth.idTokenChanges()),
+      MapEntry('userChanges', auth.userChanges()),
+    ];
+
+    for (final entry in recoveryStreams) {
+      try {
+        final user = await entry.value
+            .firstWhere((user) => user != null)
+            .timeout(const Duration(seconds: 3));
+        if (user != null) {
+          debugPrint(
+            'Recovered authenticated user from ${entry.key}: ${user.uid}',
+          );
+          return user;
+        }
+      } on TimeoutException catch (error, stackTrace) {
+        debugPrint(
+          'Timeout waiting for ${entry.key} after TypeError: '
+          '$error\n$stackTrace',
+        );
+      } catch (streamError, streamStackTrace) {
+        debugPrint(
+          'Error listening to ${entry.key} after TypeError: '
+          '$streamError\n$streamStackTrace',
+        );
+      }
+    }
+
+    return null;
   }
 }
