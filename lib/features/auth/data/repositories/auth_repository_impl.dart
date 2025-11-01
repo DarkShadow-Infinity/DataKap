@@ -3,6 +3,9 @@ import 'package:datakap/core/error/failures.dart';
 import 'package:datakap/features/auth/data/data_sources/auth_remote_data_source.dart';
 import 'package:datakap/features/auth/domain/entities/user_entity.dart';
 import 'package:datakap/features/auth/domain/repositories/auth_repository.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 
 // Implementación concreta del repositorio de autenticación, siguiendo el contrato
 // definido en la capa de Dominio (AuthRepository).
@@ -28,6 +31,15 @@ class AuthRepositoryImpl implements AuthRepository {
 
       // Si tiene éxito, retorna el UserEntity envuelto en Right (éxito)
       return Right(userModel);
+    } on FirebaseAuthException catch (e, stackTrace) {
+      debugPrint('FirebaseAuthException during login: ${e.code} - ${e.message}\n$stackTrace');
+      return Left(AuthFailure(message: _mapFirebaseAuthException(e)));
+    } on FirebaseException catch (e, stackTrace) {
+      debugPrint('FirebaseException during login: ${e.code} - ${e.message}\n$stackTrace');
+      return Left(ServerFailure(message: e.message ?? 'Ocurrió un error con Firebase.'));
+    } on TypeError catch (e, stackTrace) {
+      debugPrint('TypeError during login: $e\n$stackTrace');
+      return Left(ServerFailure(message: 'Ocurrió un error al procesar la respuesta de inicio de sesión. Intenta actualizar la aplicación e inténtalo nuevamente.'));
     } on AuthFailure catch (e) {
       // Captura fallas de autenticación específicas (ej: credenciales inválidas)
       return Left(AuthFailure(message: e.message));
@@ -39,7 +51,26 @@ class AuthRepositoryImpl implements AuthRepository {
       return Left(DataFailure(message: e.message));
     } catch (e) {
       // Captura cualquier otro error desconocido
-      return Left(ServerFailure(message: 'An unknown error occurred during login: $e'));
+      debugPrint('Unknown error during login: $e');
+      return Left(ServerFailure(message: 'Ocurrió un error inesperado al iniciar sesión. Inténtalo nuevamente.'));
+    }
+  }
+
+  String _mapFirebaseAuthException(FirebaseAuthException exception) {
+    switch (exception.code) {
+      case 'invalid-email':
+        return 'El correo electrónico no tiene un formato válido.';
+      case 'user-disabled':
+        return 'El usuario ha sido deshabilitado. Contacta al administrador.';
+      case 'user-not-found':
+      case 'wrong-password':
+        return 'Credenciales incorrectas. Verifica tu email y contraseña.';
+      case 'too-many-requests':
+        return 'Demasiados intentos fallidos. Inténtalo más tarde.';
+      case 'network-request-failed':
+        return 'Sin conexión a internet. Revisa tu conexión e inténtalo de nuevo.';
+      default:
+        return exception.message ?? 'No se pudo iniciar sesión. Inténtalo nuevamente.';
     }
   }
 
