@@ -1,0 +1,49 @@
+name: Flutter CI
+
+on:
+  push:
+    branches: [ "master", "main" ]
+  pull_request:
+    branches: [ "master", "main" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # 1. Configurar y descargar el SDK de Flutter
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          # Versión actualizada para coincidir con el Dart SDK 3.8.0 requerido
+          flutter-version: '3.32.0'
+
+      # Nuevo paso: Forzar la inicialización del ambiente de Flutter/Dart
+      - name: Initialize Flutter environment
+        run: flutter doctor -v
+
+      # 2. (Opcional) Cachear los paquetes de pub para acelerar
+      - name: Cache pub packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      # 3. Instalar dependencias usando el comando CORRECTO
+      - name: Install dependencies
+        # Reemplaza 'dart pub get' por 'flutter pub get'
+        run: flutter pub get
+
+      # 4. (Recomendado) Ejecutar análisis estático (lints)
+      - name: Run analyzer
+        run: flutter analyze
+
+      # 5. (Recomendado) Ejecutar pruebas
+      - name: Run tests
+        # Reemplaza 'dart test' por 'flutter test'
+        # Usamos --no-pub porque ya ejecutamos flutter pub get antes
+        run: flutter test --no-pub
