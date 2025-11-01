@@ -11,7 +11,6 @@ class AdminAddPromoterPage extends GetView<AdminPromoterFormController> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Agregar promovido'),
-        backgroundColor: Colors.teal,
       ),
       body: SafeArea(
         child: SingleChildScrollView(

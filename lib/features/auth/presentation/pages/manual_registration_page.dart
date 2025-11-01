@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:datakap/core/theme/app_theme.dart';
 import 'package:datakap/features/auth/domain/entities/user_entity.dart';
 import 'package:datakap/features/auth/presentation/manager/role_registration_controller.dart';
 import 'package:datakap/features/auth/presentation/widgets/registration_form_fields.dart';
@@ -17,8 +18,6 @@ class ManualRegistrationPage extends GetView<ManualRegistrationController> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Registro manual - $roleTitle'),
-        backgroundColor:
-            controller.role == UserRole.leader ? Colors.deepPurple : Colors.indigo,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -31,8 +30,9 @@ class ManualRegistrationPage extends GetView<ManualRegistrationController> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.blueGrey.shade50,
+                    color: AppColors.surface,
                     borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.secondary.withOpacity(0.12)),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -40,7 +40,7 @@ class ManualRegistrationPage extends GetView<ManualRegistrationController> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Colors.indigo,
+                          color: AppColors.primary,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Icon(Icons.edit_note, color: Colors.white),
@@ -49,7 +49,10 @@ class ManualRegistrationPage extends GetView<ManualRegistrationController> {
                       Expanded(
                         child: Text(
                           'Captura todos los campos del ${_roleLabel(controller.role)} asegurándote de corroborar la información directamente con el ciudadano.',
-                          style: Theme.of(context).textTheme.bodyMedium,
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(color: AppColors.secondary),
                         ),
                       ),
                     ],
@@ -72,18 +75,18 @@ class ManualRegistrationPage extends GetView<ManualRegistrationController> {
                     padding: const EdgeInsets.all(12),
                     margin: const EdgeInsets.only(bottom: 16),
                     decoration: BoxDecoration(
-                      color: Colors.orange.shade100,
+                      color: AppColors.warning.withOpacity(0.18),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: const [
-                        Icon(Icons.wifi_off, color: Colors.orange),
+                        Icon(Icons.wifi_off, color: AppColors.warning),
                         SizedBox(width: 12),
                         Expanded(
                           child: Text(
                             'Estás trabajando sin conexión. Los registros se guardarán en el dispositivo hasta que los sincronices.',
-                            style: TextStyle(color: Colors.orange),
+                            style: TextStyle(color: AppColors.warning),
                           ),
                         ),
                       ],

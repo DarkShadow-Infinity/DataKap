@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:datakap/core/app.dart';
+import 'package:datakap/core/theme/app_theme.dart';
 import 'package:datakap/features/auth/domain/entities/user_entity.dart';
 import 'package:datakap/features/auth/presentation/manager/auth_controller.dart';
 
@@ -19,8 +20,6 @@ class RoleOptionsPage extends GetView<AuthController> {
     return Scaffold(
       appBar: AppBar(
         title: Text('DataKap - $_roleTitle'),
-        backgroundColor:
-            role == UserRole.leader ? Colors.deepPurple : Colors.teal,
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -54,9 +53,10 @@ class RoleOptionsPage extends GetView<AuthController> {
                 const SizedBox(height: 24),
                 Card(
                   elevation: 0,
-                  color: Colors.blueGrey.shade50,
+                  color: AppColors.surface,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
+                    side: BorderSide(color: AppColors.secondary.withOpacity(0.12)),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(20),
@@ -85,7 +85,7 @@ class RoleOptionsPage extends GetView<AuthController> {
                   description:
                       'Captura la credencial, valida los datos y completa el formulario automáticamente.',
                   icon: Icons.credit_card,
-                  color: Colors.teal,
+                  color: AppColors.accent,
                   onTap: () => Get.toNamed(
                     AppRoutes.ineRegistration,
                     arguments: {'role': role},
@@ -97,7 +97,7 @@ class RoleOptionsPage extends GetView<AuthController> {
                   description:
                       'Captura los datos manualmente si no tienes disponible la credencial INE.',
                   icon: Icons.edit_note,
-                  color: Colors.indigo,
+                  color: AppColors.secondary,
                   onTap: () => Get.toNamed(
                     AppRoutes.manualRegistration,
                     arguments: {'role': role},
@@ -109,7 +109,7 @@ class RoleOptionsPage extends GetView<AuthController> {
                   description:
                       'Envía los registros guardados en el dispositivo cuando recuperes la conexión.',
                   icon: Icons.sync,
-                  color: Colors.orange,
+                  color: AppColors.warning,
                   onTap: () => Get.toNamed(AppRoutes.registrationSync),
                 ),
                 const SizedBox(height: 32),
@@ -117,17 +117,18 @@ class RoleOptionsPage extends GetView<AuthController> {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
-                    color: Colors.grey.shade100,
+                    color: AppColors.surface,
+                    border: Border.all(color: AppColors.secondary.withOpacity(0.12)),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: const [
-                      Icon(Icons.info_outline, color: Colors.blueGrey),
+                      Icon(Icons.info_outline, color: AppColors.secondary),
                       SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           'Recuerda verificar que todos los datos estén completos y sean legibles antes de enviar el registro.',
-                          style: TextStyle(color: Colors.blueGrey),
+                          style: TextStyle(color: AppColors.secondary),
                         ),
                       ),
                     ],
