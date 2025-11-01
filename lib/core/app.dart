@@ -9,6 +9,16 @@ import 'package:get/get.dart';
 // -- Importación de Capa de Datos y Dominio --
 // Asegúrate de que estas rutas coincidan con tu estructura
 import 'package:datakap/core/network/network_info.dart';
+import 'package:datakap/features/admin_user_management/data/data_sources/admin_user_api.dart';
+import 'package:datakap/features/admin_user_management/data/repositories/admin_user_repository_impl.dart';
+import 'package:datakap/features/admin_user_management/domain/repositories/admin_user_repository.dart';
+import 'package:datakap/features/admin_user_management/domain/use_cases/create_admin_user_use_case.dart';
+import 'package:datakap/features/admin_user_management/domain/use_cases/delete_admin_user_use_case.dart';
+import 'package:datakap/features/admin_user_management/domain/use_cases/get_admin_user_use_case.dart';
+import 'package:datakap/features/admin_user_management/domain/use_cases/update_admin_user_use_case.dart';
+import 'package:datakap/features/admin_user_management/domain/use_cases/watch_admin_users_use_case.dart';
+import 'package:datakap/features/admin_user_management/presentation/manager/admin_user_controller.dart';
+import 'package:datakap/features/admin_user_management/presentation/pages/admin_user_management_page.dart';
 import 'package:datakap/features/auth/data/data_sources/auth_local_data_source.dart';
 import 'package:datakap/features/auth/data/data_sources/auth_remote_data_source.dart';
 import 'package:datakap/features/auth/data/repositories/auth_repository_impl.dart';
@@ -107,6 +117,28 @@ class AppBindings extends Bindings {
       fenix: true,
     );
 
+    // Gestión de usuarios administrativos
+    Get.lazyPut<AdminUserApi>(() => AdminUserApi(Get.find()), fenix: true);
+    Get.lazyPut<AdminUserRepository>(
+      () => AdminUserRepositoryImpl(Get.find()),
+      fenix: true,
+    );
+    Get.lazyPut<GetAdminUserUseCase>(() => GetAdminUserUseCase(Get.find()), fenix: true);
+    Get.lazyPut<WatchAdminUsersUseCase>(() => WatchAdminUsersUseCase(Get.find()), fenix: true);
+    Get.lazyPut<CreateAdminUserUseCase>(() => CreateAdminUserUseCase(Get.find()), fenix: true);
+    Get.lazyPut<UpdateAdminUserUseCase>(() => UpdateAdminUserUseCase(Get.find()), fenix: true);
+    Get.lazyPut<DeleteAdminUserUseCase>(() => DeleteAdminUserUseCase(Get.find()), fenix: true);
+    Get.lazyPut<AdminUserController>(
+      () => AdminUserController(
+        getAdminUserUseCase: Get.find(),
+        watchAdminUsersUseCase: Get.find(),
+        createAdminUserUseCase: Get.find(),
+        updateAdminUserUseCase: Get.find(),
+        deleteAdminUserUseCase: Get.find(),
+      ),
+      fenix: true,
+    );
+
     // Controller: Usa el Repository (la lógica de negocio)
     // Se usa 'permanent: true' para que el controlador persista toda la vida de la app
     Get.put<AuthController>(AuthController(Get.find()), permanent: true);
@@ -127,6 +159,7 @@ class AppRoutes {
   static const String registrationSync = '/registration/sync';
   static const String adminAddPromoter = '/admin/promoters/add';
   static const String adminAddLeader = '/admin/leaders/add';
+  static const String adminUserManagement = '/admin/users';
 }
 
 class AppPages {
@@ -203,6 +236,15 @@ class AppPages {
           ),
         );
       }),
+    ),
+
+    GetPage(
+      name: AppRoutes.adminUserManagement,
+      page: () => const AdminUserManagementPage(),
+      binding: BindingsBuilder(() {
+        Get.find<AdminUserController>();
+      }),
+      fullscreenDialog: true,
     ),
 
     GetPage(

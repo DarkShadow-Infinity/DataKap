@@ -11,7 +11,6 @@ class AdminAddLeaderPage extends GetView<AdminLeaderFormController> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Agregar líder'),
-        backgroundColor: Colors.deepPurple,
       ),
       body: SafeArea(
         child: SingleChildScrollView(

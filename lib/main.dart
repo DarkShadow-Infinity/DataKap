@@ -8,6 +8,7 @@ import 'firebase_options.dart';
 
 // Importamos el archivo donde definiremos las rutas y la DI
 import 'core/app.dart';
+import 'core/theme/app_theme.dart';
 
 void main() async {
   // 1. Asegurarse de que Flutter Widgets estén inicializados
@@ -40,7 +41,7 @@ class MyApp extends StatelessWidget {
     // Usamos GetMaterialApp en lugar de MaterialApp para la gestión de estado y rutas con GetX
     return GetMaterialApp(
       title: 'DataKap - Recolección de Datos',
-      theme: ThemeData(primarySwatch: Colors.blue, visualDensity: VisualDensity.adaptivePlatformDensity),
+      theme: AppTheme.light,
       // Definiremos la ruta inicial y el resto en el archivo 'core/app.dart'
       initialRoute: '/',
       getPages: AppPages.pages,

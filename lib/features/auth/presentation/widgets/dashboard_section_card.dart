@@ -1,33 +1,36 @@
 import 'package:flutter/material.dart';
 
+import 'package:datakap/core/theme/app_theme.dart';
+
 class DashboardSectionCard extends StatelessWidget {
   const DashboardSectionCard({
     super.key,
     required this.title,
     required this.subtitle,
     required this.icon,
-    this.backgroundColor = const Color(0xFF1E88E5),
+    this.backgroundColor,
     this.onTap,
   });
 
   final String title;
   final String subtitle;
   final IconData icon;
-  final Color backgroundColor;
+  final Color? backgroundColor;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
+    final color = backgroundColor ?? AppColors.primary;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Ink(
         decoration: BoxDecoration(
-          color: backgroundColor,
+          color: color,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: backgroundColor.withOpacity(0.3),
+              color: color.withOpacity(0.25),
               blurRadius: 12,
               offset: const Offset(0, 6),
             ),
@@ -46,7 +49,7 @@ class DashboardSectionCard extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppColors.onPrimary,
                 ),
               ),
               const SizedBox(height: 8),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:datakap/core/theme/app_theme.dart';
+import 'package:datakap/features/admin_user_management/presentation/manager/admin_user_controller.dart';
 import 'package:datakap/features/auth/domain/entities/user_entity.dart';
 
 abstract class AdminUserFormController extends GetxController {
@@ -8,6 +10,7 @@ abstract class AdminUserFormController extends GetxController {
   final UserRole role;
   final formKey = GlobalKey<FormState>();
   final isSubmitting = false.obs;
+  final AdminUserController adminUserController = Get.find();
 
   late final TextEditingController emailController;
   late final TextEditingController tempPasswordController;
@@ -46,23 +49,40 @@ abstract class AdminUserFormController extends GetxController {
     }
 
     isSubmitting.value = true;
-    await Future.delayed(const Duration(milliseconds: 600));
+    final success = await adminUserController.createUser(
+      email: emailController.text.trim(),
+      fullName: fullNameController.text.trim(),
+      phone: phoneController.text.trim(),
+      role: role == UserRole.leader ? 'leader' : 'promoter',
+      goal: int.tryParse(goalController.text.trim()) ?? 0,
+      verificationCode: verificationCodeController.text.trim(),
+    );
     isSubmitting.value = false;
 
-    Get.snackbar(
-      'Usuario creado',
-      'Se envió la invitación para el ${roleLabel.toLowerCase()}.',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.blueGrey.shade700,
-      colorText: Colors.white,
-    );
+    if (success) {
+      Get.snackbar(
+        'Invitación enviada',
+        'Se registró el ${roleLabel.toLowerCase()} correctamente.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.accent,
+        colorText: Colors.white,
+      );
 
-    emailController.clear();
-    tempPasswordController.clear();
-    fullNameController.clear();
-    phoneController.clear();
-    goalController.clear();
-    verificationCodeController.clear();
+      emailController.clear();
+      tempPasswordController.clear();
+      fullNameController.clear();
+      phoneController.clear();
+      goalController.clear();
+      verificationCodeController.clear();
+    } else {
+      Get.snackbar(
+        'Error al registrar',
+        'No se pudo crear la invitación, intenta nuevamente.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.danger,
+        colorText: Colors.white,
+      );
+    }
   }
 }
 
