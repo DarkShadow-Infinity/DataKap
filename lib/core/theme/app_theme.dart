@@ -31,6 +31,11 @@ class AppTheme {
       onError: Colors.white,
     );
 
+    final cardShape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(20),
+      side: const BorderSide(color: Color(0xFFE3E7ED)),
+    );
+
     return base.copyWith(
       colorScheme: colorScheme,
       scaffoldBackgroundColor: AppColors.background,
@@ -73,13 +78,11 @@ class AppTheme {
         labelStyle: const TextStyle(color: AppColors.onSurface),
         secondaryLabelStyle: const TextStyle(color: AppColors.onPrimary),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: Colors.white,
         elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: Color(0xFFE3E7ED)),
-        ),
+        surfaceTintColor: Colors.white,
+        shape: cardShape,
       ),
       dividerColor: const Color(0xFFE3E7ED),
       progressIndicatorTheme:
