@@ -1,4 +1,6 @@
 import 'package:datakap/features/auth/domain/entities/user_entity.dart';
+import 'package:datakap/features/auth/presentation/manager/auth_controller.dart';
+import 'package:datakap/features/auth/presentation/widgets/role_navigation_drawer.dart';
 import 'package:datakap/features/registration/presentation/manager/registration_sync_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -10,10 +12,17 @@ class RegistrationSyncPage extends GetView<RegistrationSyncController> {
   @override
   Widget build(BuildContext context) {
     final dateFormat = DateFormat('dd/MM/yyyy HH:mm');
+    final authController = Get.find<AuthController>();
+    final args = Get.arguments as Map<String, dynamic>?;
+    final roleArg = args?['role'] as UserRole?;
+    final inferredRole = roleArg ?? authController.currentUser.value.role;
+    final role =
+        inferredRole == UserRole.unknown ? UserRole.promoter : inferredRole;
+    final showDrawer = role == UserRole.promoter || role == UserRole.leader;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Sincronización de registros'),
-        backgroundColor: Colors.indigo,
         actions: [
           Obx(() => IconButton(
                 icon: const Icon(Icons.refresh),
@@ -22,6 +31,9 @@ class RegistrationSyncPage extends GetView<RegistrationSyncController> {
               )),
         ],
       ),
+      drawer: showDrawer
+          ? RoleNavigationDrawer(role: role, controller: authController)
+          : null,
       body: SafeArea(
         child: Obx(() {
           if (controller.isLoading.value) {

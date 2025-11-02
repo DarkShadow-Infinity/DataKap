@@ -4,6 +4,7 @@ import 'package:datakap/core/app.dart';
 import 'package:datakap/core/theme/app_theme.dart';
 import 'package:datakap/features/auth/domain/entities/user_entity.dart';
 import 'package:datakap/features/auth/presentation/manager/auth_controller.dart';
+import 'package:datakap/features/auth/presentation/widgets/role_navigation_drawer.dart';
 
 class RoleOptionsPage extends GetView<AuthController> {
   const RoleOptionsPage({
@@ -20,14 +21,8 @@ class RoleOptionsPage extends GetView<AuthController> {
     return Scaffold(
       appBar: AppBar(
         title: Text('DataKap - $_roleTitle'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: controller.logout,
-            tooltip: 'Cerrar sesión',
-          ),
-        ],
       ),
+      drawer: RoleNavigationDrawer(role: role, controller: controller),
       body: SafeArea(
         child: Obx(() {
           final email = controller.currentUser.value.email;
@@ -110,7 +105,10 @@ class RoleOptionsPage extends GetView<AuthController> {
                       'Envía los registros guardados en el dispositivo cuando recuperes la conexión.',
                   icon: Icons.sync,
                   color: AppColors.warning,
-                  onTap: () => Get.toNamed(AppRoutes.registrationSync),
+                  onTap: () => Get.toNamed(
+                    AppRoutes.registrationSync,
+                    arguments: {'role': role},
+                  ),
                 ),
                 const SizedBox(height: 32),
                 Container(
