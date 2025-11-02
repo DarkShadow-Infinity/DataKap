@@ -7,6 +7,7 @@ class AppColors {
   static const Color danger = Color(0xFFE24A4A);
   static const Color warning = Color(0xFFF5A524);
   static const Color info = Color(0xFF4AA3DF);
+  static const Color success = Color(0xFF2CB67D);
   static const Color background = Color(0xFFF5F7FA);
   static const Color surface = Colors.white;
   static const Color onPrimary = Colors.white;
@@ -22,8 +23,7 @@ class AppTheme {
       seedColor: AppColors.primary,
       primary: AppColors.primary,
       secondary: AppColors.secondary,
-      background: AppColors.background,
-      surface: AppColors.surface,
+      surface: AppColors.background, // Changed from background to surface
       onPrimary: AppColors.onPrimary,
       onSecondary: Colors.white,
       onSurface: AppColors.onSurface,

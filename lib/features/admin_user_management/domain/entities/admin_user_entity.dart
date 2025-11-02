@@ -1,55 +1,45 @@
-import 'package:datakap/features/admin_user_management/data/models/admin_user_model.dart';
+import 'package:equatable/equatable.dart';
 
-class AdminUserEntity {
-  AdminUserEntity({
-    required this.id,
-    required this.email,
-    required this.fullName,
-    required this.phone,
-    required this.role,
-    required this.goal,
-    required this.verificationCode,
-    required this.status,
-    required this.isActive,
-    required this.createdAt,
-  });
-
-  factory AdminUserEntity.fromModel(AdminUserModel model) => AdminUserEntity(
-        id: model.id,
-        email: model.email,
-        fullName: model.fullName,
-        phone: model.phone,
-        role: model.role,
-        goal: model.goal,
-        verificationCode: model.verificationCode,
-        status: model.status,
-        isActive: model.isActive,
-        createdAt: model.createdAt,
-      );
-
+class AdminUserEntity extends Equatable {
   final String id;
   final String email;
   final String fullName;
   final String phone;
   final String role;
-  final int goal;
-  final String verificationCode;
+  final int? goal;
   final String status;
-  final bool isActive;
+  final String? verificationCode;
   final DateTime createdAt;
+  final bool isActive;
 
-  AdminUserModel toModel() {
-    return AdminUserModel(
-      id: id,
-      email: email,
-      fullName: fullName,
-      phone: phone,
-      role: role,
-      goal: goal,
-      verificationCode: verificationCode,
-      status: status,
-      isActive: isActive,
-      createdAt: createdAt,
-    );
-  }
+  const AdminUserEntity({
+    required this.id,
+    required this.email,
+    required this.fullName,
+    required this.phone,
+    required this.role,
+    this.goal,
+    required this.status,
+    this.verificationCode,
+    required this.createdAt,
+    required this.isActive,
+  });
+
+  @override
+  List<Object?> get props => [
+        id,
+        email,
+        fullName,
+        phone,
+        role,
+        goal,
+        status,
+        verificationCode,
+        createdAt,
+        isActive,
+      ];
+
+  @override
+  String toString() =>
+      'AdminUserEntity(id: $id, email: $email, fullName: $fullName, phone: $phone, role: $role, goal: $goal, status: $status, verificationCode: $verificationCode, createdAt: $createdAt, isActive: $isActive)';
 }

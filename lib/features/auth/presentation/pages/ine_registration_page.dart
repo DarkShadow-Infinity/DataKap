@@ -32,7 +32,7 @@ class IneRegistrationPage extends GetView<IneRegistrationController> {
                   decoration: BoxDecoration(
                     color: AppColors.surface,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.secondary.withOpacity(0.12)),
+                    border: Border.all(color: AppColors.secondary.withAlpha((255 * 0.12).round())),
                   ),
                   child: Row(
                     children: [
@@ -65,11 +65,11 @@ class IneRegistrationPage extends GetView<IneRegistrationController> {
                         border: Border.all(
                           color: controller.hasPhoto.value
                               ? AppColors.accent
-                              : AppColors.secondary.withOpacity(0.3),
+                              : AppColors.secondary.withAlpha((255 * 0.3).round()),
                           width: 2,
                         ),
                         color: controller.hasPhoto.value
-                            ? AppColors.accent.withOpacity(0.12)
+                            ? AppColors.accent.withAlpha((255 * 0.12).round())
                             : AppColors.background,
                       ),
                       child: Center(
@@ -139,7 +139,7 @@ class IneRegistrationPage extends GetView<IneRegistrationController> {
                     padding: const EdgeInsets.all(12),
                     margin: const EdgeInsets.only(bottom: 16),
                     decoration: BoxDecoration(
-                      color: AppColors.warning.withOpacity(0.18),
+                      color: AppColors.warning.withAlpha((255 * 0.18).round()),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(

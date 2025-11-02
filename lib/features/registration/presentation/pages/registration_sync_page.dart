@@ -98,7 +98,7 @@ class RegistrationSyncPage extends GetView<RegistrationSyncController> {
                                   ),
                                   const SizedBox(width: 12),
                                   Text(
-                                    registration.role == UserRole.leader
+                                    registration.role == UserRole.leader.name
                                         ? 'Registro de líder'
                                         : 'Registro de promovido',
                                     style: Theme.of(context)

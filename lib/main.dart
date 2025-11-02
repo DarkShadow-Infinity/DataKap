@@ -1,8 +1,8 @@
+import 'package:datakap/core/model/registration_model.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:datakap/features/registration/data/models/registration_model.dart';
 // Importamos el archivo generado por flutterfire configure
 import 'firebase_options.dart';
 

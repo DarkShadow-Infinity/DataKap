@@ -6,21 +6,23 @@ class UserModel extends UserEntity {
     required super.uid,
     required super.email,
     required super.role,
+    super.fullName,
+    super.phone,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
-    // Mapeo del rol de String a UserRole (la lógica de negocio)
     final roleString = json['role'] as String? ?? 'unknown';
     final role = _parseRole(roleString);
 
     return UserModel(
-      uid: json['uid'] as String,
+      uid: json['id'] as String, // Use 'id' from API response
       email: json['email'] as String,
       role: role,
+      fullName: json['fullName'] as String?, // Parse fullName
+      phone: json['phone'] as String?, // Parse phone
     );
   }
 
-  // Mapea un User de Firebase a un UserRole interno
   static UserRole _parseRole(String role) {
     switch (role.toLowerCase()) {
       case 'admin':
@@ -39,7 +41,6 @@ class UserModel extends UserEntity {
     }
   }
 
-  // Mapea un objeto Firebase User (si existe)
   static UserModel? fromFirebaseUser(dynamic user, Map<String, dynamic>? userData) {
     if (user == null) {
       return null;
@@ -48,17 +49,21 @@ class UserModel extends UserEntity {
     final fallbackRole = userData?['role'] as String? ?? 'promovido';
 
     return UserModel.fromJson({
-      'uid': user.uid,
+      'id': user.uid, // Use 'id' for consistency with API
       'email': user.email ?? '',
       'role': fallbackRole,
+      'fullName': userData?['fullName'] as String?, // Pass fullName from userData
+      'phone': userData?['phone'] as String?, // Pass phone from userData
     });
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'uid': uid,
+      'id': uid, // Use 'id' for consistency with API
       'email': email,
       'role': role.name,
+      'fullName': fullName,
+      'phone': phone,
     };
   }
 }

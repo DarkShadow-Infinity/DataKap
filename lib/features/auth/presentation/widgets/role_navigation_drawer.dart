@@ -65,7 +65,7 @@ class RoleNavigationDrawer extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 24,
-                      backgroundColor: AppColors.accent.withOpacity(0.2),
+                      backgroundColor: AppColors.primary.withAlpha((255 * 0.8).round()),
                       child: const Icon(Icons.person, color: Colors.white),
                     ),
                     const SizedBox(height: 12),

@@ -232,26 +232,20 @@ class RoleRegistrationController extends GetxController {
 
 class IneRegistrationController extends RoleRegistrationController {
   IneRegistrationController({
-    required UserRole role,
-    required SubmitRegistrationUseCase submitRegistrationUseCase,
-    required NetworkInfo networkInfo,
+    required super.role,
+    required super.submitRegistrationUseCase,
+    required super.networkInfo,
   }) : super(
-          role: role,
           requiresPhoto: true,
-          submitRegistrationUseCase: submitRegistrationUseCase,
-          networkInfo: networkInfo,
         );
 }
 
 class ManualRegistrationController extends RoleRegistrationController {
   ManualRegistrationController({
-    required UserRole role,
-    required SubmitRegistrationUseCase submitRegistrationUseCase,
-    required NetworkInfo networkInfo,
+    required super.role,
+    required super.submitRegistrationUseCase,
+    required super.networkInfo,
   }) : super(
-          role: role,
           requiresPhoto: false,
-          submitRegistrationUseCase: submitRegistrationUseCase,
-          networkInfo: networkInfo,
         );
 }

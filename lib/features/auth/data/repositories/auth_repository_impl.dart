@@ -34,24 +34,32 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<Failure, UserEntity>> login(String email, String password) async {
     try {
       final hasConnection = await networkInfo.isConnected;
+
       if (!hasConnection) {
-        final cached = await localDataSource.getUserByEmail(email);
-        if (cached != null) {
-          return Right(cached);
-        }
+        // ⚠️ CÓDIGO SEGURO EN MODO OFFLINE ⚠️
+        // 1. Omitimos la peligrosa búsqueda 'localDataSource.getUserByEmail(email)'.
 
         final currentUser = firebaseAuth.currentUser;
+
+        // 2. Solo permitimos el acceso si Firebase tiene un token válido y persistente
+        //    para un usuario (indicando que se autenticó previamente con éxito).
         if (currentUser != null) {
+          // 3. Recuperamos los datos del usuario de la caché por su UID,
+          //    no por el email proporcionado por el usuario, lo cual es más seguro.
           final cachedByUid = await localDataSource.getUserByUid(currentUser.uid);
+
           if (cachedByUid != null) {
+            // Éxito: El usuario tiene una sesión persistente y sus datos están en caché.
             return Right(cachedByUid);
           }
         }
 
+        // 4. Si no hay conexión Y no hay una sesión persistente de Firebase,
+        //    retornamos el error de falta de conexión.
         return Left(
           ServerFailure(
             message:
-                'Sin conexión a internet. Conéctate al menos una vez para validar tus credenciales.',
+            'Sin conexión a internet. Conéctate al menos una vez para validar tus credenciales.',
           ),
         );
       }

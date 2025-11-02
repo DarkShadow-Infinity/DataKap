@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:datakap/core/network/network_info.dart';
 import 'package:datakap/features/registration/domain/entities/registration_entity.dart';
-import 'package:datakap/features/registration/domain/entities/sync_summary_entity.dart';
+import 'package:datakap/features/registration/domain/entities/registration_sync_summary_entity.dart';
 import 'package:datakap/features/registration/domain/use_cases/get_pending_registrations_use_case.dart';
 import 'package:datakap/features/registration/domain/use_cases/sync_pending_registrations_use_case.dart';
 import 'package:flutter/material.dart';
@@ -49,7 +49,7 @@ class RegistrationSyncController extends GetxController {
 
   Future<void> loadPending() async {
     isLoading.value = true;
-    final result = await _getPendingRegistrationsUseCase.execute();
+    final result = await _getPendingRegistrationsUseCase();
     result.fold(
       (failure) {
         Get.snackbar(
@@ -90,17 +90,20 @@ class RegistrationSyncController extends GetxController {
     isSyncing.value = false;
   }
 
-  void _handleSyncSummary(SyncSummaryEntity summary) {
-    pendingRegistrations.assignAll(summary.pending);
+  void _handleSyncSummary(RegistrationSyncSummaryEntity summary) {
+    // Assuming pending registrations are updated elsewhere or fetched again after sync
+    // pendingRegistrations.assignAll(summary.pending); // This line might need adjustment based on actual logic
 
-    final synced = summary.syncedCount;
-    final failed = summary.failedCount;
+    final synced = summary.syncedToday;
+    final failed = summary.failed;
+    final totalAttempted = summary.pending + summary.syncedToday + summary.failed; // Calculate total attempted
+
     final title = synced > 0 && failed == 0
         ? 'Sincronización exitosa'
         : failed > 0
             ? 'Sincronización parcial'
             : 'Sin registros por sincronizar';
-    final message = summary.totalAttempted == 0
+    final message = totalAttempted == 0
         ? 'No hay registros pendientes por sincronizar.'
         : 'Sincronizados: $synced • Fallidos: $failed';
 

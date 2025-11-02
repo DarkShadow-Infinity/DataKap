@@ -8,7 +8,7 @@ class GetPendingRegistrationsUseCase {
 
   final RegistrationRepository _repository;
 
-  Future<Either<Failure, List<RegistrationEntity>>> execute() {
+  Future<Either<Failure, List<RegistrationEntity>>> call() {
     return _repository.getPendingRegistrations();
   }
 }

@@ -29,3 +29,13 @@ class DataFailure extends Failure {
 class CacheFailure extends Failure {
   const CacheFailure({required super.message});
 }
+
+// 5. Fallas relacionadas con la conectividad de red.
+class NetworkFailure extends Failure {
+  const NetworkFailure({super.message = 'No hay conexión a internet.'});
+}
+
+// 6. Fallas relacionadas con la validación de datos (ej: entrada de usuario inválida).
+class ValidationFailure extends Failure {
+  const ValidationFailure({required super.message});
+}

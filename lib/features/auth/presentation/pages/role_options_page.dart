@@ -51,7 +51,7 @@ class RoleOptionsPage extends GetView<AuthController> {
                   color: AppColors.surface,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
-                    side: BorderSide(color: AppColors.secondary.withOpacity(0.12)),
+                    side: BorderSide(color: AppColors.secondary.withAlpha((255 * 0.12).round())),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(20),
@@ -116,7 +116,7 @@ class RoleOptionsPage extends GetView<AuthController> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
                     color: AppColors.surface,
-                    border: Border.all(color: AppColors.secondary.withOpacity(0.12)),
+                    border: Border.all(color: AppColors.secondary.withAlpha((255 * 0.12).round())),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -165,8 +165,8 @@ class _OptionCard extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          color: color.withOpacity(0.1),
-          border: Border.all(color: color.withOpacity(0.4), width: 1.5),
+          color: color.withAlpha((255 * 0.1).round()),
+          border: Border.all(color: color.withAlpha((255 * 0.4).round()), width: 1.5),
         ),
         child: Row(
           children: [

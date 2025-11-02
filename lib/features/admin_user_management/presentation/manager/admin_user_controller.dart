@@ -33,7 +33,6 @@ class AdminUserController extends SOGetXController {
   final RxList<AdminUserEntity> users = <AdminUserEntity>[].obs;
   final RxBool isLoading = false.obs;
   final RxString filterRole = ''.obs;
-  @override
   Rx<SONotifier?> uiNotifier = Rx<SONotifier?>(null);
 
   StreamSubscription<List<AdminUserEntity>>? _subscription;

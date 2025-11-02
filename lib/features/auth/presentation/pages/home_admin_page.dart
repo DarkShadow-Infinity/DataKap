@@ -198,6 +198,13 @@ class _QuickActionsGrid extends StatelessWidget {
         color: AppColors.warning,
         onTap: () => Get.toNamed(AppRoutes.registrationSync),
       ),
+      _QuickAction(
+        title: 'Ver Registros',
+        subtitle: 'Ver todos los registros.',
+        icon: Icons.list,
+        color: AppColors.success,
+        onTap: () => Get.toNamed(AppRoutes.registrations),
+      ),
     ];
 
     return LayoutBuilder(
@@ -306,10 +313,10 @@ class _SummaryCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: stat.accent.withOpacity(0.2)),
+        border: Border.all(color: stat.accent.withAlpha((255 * 0.2).round())),
         boxShadow: [
           BoxShadow(
-            color: stat.accent.withOpacity(0.08),
+            color: stat.accent.withAlpha((255 * 0.08).round()),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),
@@ -330,7 +337,7 @@ class _SummaryCard extends StatelessWidget {
           Text(
             stat.label,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: stat.accent.withOpacity(0.9),
+                  color: stat.accent.withAlpha((255 * 0.9).round()),
                 ),
           ),
         ],

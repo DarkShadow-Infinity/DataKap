@@ -1,44 +1,42 @@
+import 'package:datakap/features/registration/domain/use_cases/registration_request.dart';
 import 'package:equatable/equatable.dart';
-import 'package:datakap/features/auth/domain/entities/user_entity.dart';
+import 'package:uuid/uuid.dart';
 
-class RegistrationEntity extends Equatable {
+class RegistrationEntity with EquatableMixin {
+  final String id;
+  final String role;
+  final bool requiresPhoto;
+  final Map<String, dynamic> fields;
+  final String? photoUrl;
+  final DateTime createdAt;
+  final DateTime? syncedAt;
+  final String syncStatus;
+  final String? clientRequestId;
+  final String? syncError;
+
   const RegistrationEntity({
     required this.id,
     required this.role,
     required this.requiresPhoto,
     required this.fields,
-    this.photoPath,
+    this.photoUrl,
     required this.createdAt,
     this.syncedAt,
-    required this.isSynced,
+    required this.syncStatus,
+    this.clientRequestId,
     this.syncError,
   });
 
-  final String id;
-  final UserRole role;
-  final bool requiresPhoto;
-  final Map<String, String> fields;
-  final String? photoPath;
-  final DateTime createdAt;
-  final DateTime? syncedAt;
-  final bool isSynced;
-  final String? syncError;
-
-  RegistrationEntity copyWith({
-    bool? isSynced,
-    DateTime? syncedAt,
-    String? syncError,
-  }) {
+  factory RegistrationEntity.fromRequest(RegistrationRequest request) {
+    final uuid = const Uuid();
     return RegistrationEntity(
-      id: id,
-      role: role,
-      requiresPhoto: requiresPhoto,
-      fields: fields,
-      photoPath: photoPath,
-      createdAt: createdAt,
-      syncedAt: syncedAt ?? this.syncedAt,
-      isSynced: isSynced ?? this.isSynced,
-      syncError: syncError,
+      id: uuid.v4(),
+      role: request.role.name,
+      requiresPhoto: request.requiresPhoto,
+      fields: request.fields,
+      photoUrl: request.photoPath,
+      createdAt: DateTime.now(),
+      syncStatus: 'pending',
     );
   }
 
@@ -48,10 +46,17 @@ class RegistrationEntity extends Equatable {
         role,
         requiresPhoto,
         fields,
-        photoPath,
+        photoUrl,
         createdAt,
         syncedAt,
-        isSynced,
+        syncStatus,
+        clientRequestId,
         syncError,
       ];
+
+  @override
+  String toString() =>
+      'RegistrationEntity(id: $id, role: $role, requiresPhoto: $requiresPhoto, fields: $fields, photoUrl: $photoUrl, createdAt: $createdAt, syncedAt: $syncedAt, syncStatus: $syncStatus, clientRequestId: $clientRequestId, syncError: $syncError)';
+
+  bool get isSynced => syncStatus == 'synced';
 }

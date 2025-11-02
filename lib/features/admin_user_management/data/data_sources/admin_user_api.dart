@@ -18,23 +18,23 @@ class AdminUserApi {
         message: 'No se encontró el usuario solicitado.',
       );
     }
-    return AdminUserModel.fromDocument(doc);
+    return AdminUserModel.fromJson(doc.data()!);
   }
 
   Stream<List<AdminUserModel>> watchUsers() {
     return _collection.snapshots().map(
       (snapshot) => snapshot.docs
-          .map(AdminUserModel.fromDocument)
+          .map((doc) => AdminUserModel.fromJson(doc.data()))
           .toList(growable: false),
     );
   }
 
   Future<void> createUser(AdminUserModel model) async {
-    await _collection.doc(model.id).set(model.toMap());
+    await _collection.doc(model.id).set(model.toJson());
   }
 
   Future<void> updateUser(AdminUserModel model) async {
-    await _collection.doc(model.id).update(model.toMap());
+    await _collection.doc(model.id).update(model.toJson());
   }
 
   Future<void> deleteUser(String id) async {

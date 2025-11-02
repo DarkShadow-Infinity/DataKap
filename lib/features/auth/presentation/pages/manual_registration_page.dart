@@ -32,7 +32,7 @@ class ManualRegistrationPage extends GetView<ManualRegistrationController> {
                   decoration: BoxDecoration(
                     color: AppColors.surface,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.secondary.withOpacity(0.12)),
+                    border: Border.all(color: AppColors.secondary.withAlpha((255 * 0.12).round())),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,7 +75,7 @@ class ManualRegistrationPage extends GetView<ManualRegistrationController> {
                     padding: const EdgeInsets.all(12),
                     margin: const EdgeInsets.only(bottom: 16),
                     decoration: BoxDecoration(
-                      color: AppColors.warning.withOpacity(0.18),
+                      color: AppColors.warning.withAlpha((255 * 0.18).round()),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(

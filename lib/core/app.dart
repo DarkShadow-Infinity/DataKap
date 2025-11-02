@@ -5,10 +5,12 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 
 // -- Importación de Capa de Datos y Dominio --
 // Asegúrate de que estas rutas coincidan con tu estructura
 import 'package:datakap/core/network/network_info.dart';
+import 'package:datakap/core/network/network_info_impl.dart';
 import 'package:datakap/features/admin_user_management/data/data_sources/admin_user_api.dart';
 import 'package:datakap/features/admin_user_management/data/repositories/admin_user_repository_impl.dart';
 import 'package:datakap/features/admin_user_management/domain/repositories/admin_user_repository.dart';
@@ -26,11 +28,17 @@ import 'package:datakap/features/auth/domain/entities/user_entity.dart';
 import 'package:datakap/features/auth/domain/repositories/auth_repository.dart';
 import 'package:datakap/features/registration/data/data_sources/registration_local_data_source.dart';
 import 'package:datakap/features/registration/data/data_sources/registration_remote_data_source.dart';
+import 'package:datakap/features/registration/data/data_sources/registration_remote_data_source_impl.dart';
 import 'package:datakap/features/registration/data/repositories/registration_repository_impl.dart';
 import 'package:datakap/features/registration/domain/repositories/registration_repository.dart';
 import 'package:datakap/features/registration/domain/use_cases/get_pending_registrations_use_case.dart';
 import 'package:datakap/features/registration/domain/use_cases/submit_registration_use_case.dart';
 import 'package:datakap/features/registration/domain/use_cases/sync_pending_registrations_use_case.dart';
+import 'package:datakap/features/registration/domain/use_cases/create_registration_use_case.dart';
+import 'package:datakap/features/registration/domain/use_cases/delete_registration_use_case.dart';
+import 'package:datakap/features/registration/domain/use_cases/get_registration_by_id_use_case.dart';
+import 'package:datakap/features/registration/domain/use_cases/get_registrations_use_case.dart';
+import 'package:datakap/features/registration/domain/use_cases/update_registration_use_case.dart';
 
 // -- Importación de Capa de Presentación (Vistas y Controlador) --
 import 'package:datakap/features/auth/presentation/manager/admin_user_form_controller.dart';
@@ -43,7 +51,9 @@ import 'package:datakap/features/auth/presentation/pages/ine_registration_page.d
 import 'package:datakap/features/auth/presentation/pages/login_page.dart';
 import 'package:datakap/features/auth/presentation/pages/manual_registration_page.dart';
 import 'package:datakap/features/auth/presentation/pages/role_options_page.dart';
+import 'package:datakap/features/registration/presentation/manager/registration_controller.dart';
 import 'package:datakap/features/registration/presentation/manager/registration_sync_controller.dart';
+import 'package:datakap/features/registration/presentation/pages/registration_page.dart';
 import 'package:datakap/features/registration/presentation/pages/registration_sync_page.dart';
 
 // ==========================================================
@@ -60,8 +70,9 @@ class AppBindings extends Bindings {
     Get.lazyPut<FirebaseAuth>(() => FirebaseAuth.instance, fenix: true);
     Get.lazyPut<FirebaseFirestore>(() => FirebaseFirestore.instance, fenix: true);
     Get.lazyPut<Connectivity>(() => Connectivity(), fenix: true);
+    Get.lazyPut<http.Client>(() => http.Client(), fenix: true);
     Get.lazyPut<NetworkInfo>(
-      () => ConnectivityNetworkInfo(connectivity: Get.find()),
+      () => NetworkInfoImpl(Get.find()),
       fenix: true,
     );
 
@@ -93,7 +104,7 @@ class AppBindings extends Bindings {
       fenix: true,
     );
     Get.lazyPut<RegistrationRemoteDataSource>(
-      () => RegistrationRemoteDataSourceImpl(firestore: Get.find()),
+      () => RegistrationRemoteDataSourceImpl(client: Get.find()),
       fenix: true,
     );
     Get.lazyPut<RegistrationRepository>(
@@ -114,6 +125,27 @@ class AppBindings extends Bindings {
     );
     Get.lazyPut<SyncPendingRegistrationsUseCase>(
       () => SyncPendingRegistrationsUseCase(Get.find()),
+      fenix: true,
+    );
+
+    Get.lazyPut<CreateRegistrationUseCase>(
+      () => CreateRegistrationUseCase(Get.find()),
+      fenix: true,
+    );
+    Get.lazyPut<GetRegistrationsUseCase>(
+      () => GetRegistrationsUseCase(Get.find()),
+      fenix: true,
+    );
+    Get.lazyPut<GetRegistrationByIdUseCase>(
+      () => GetRegistrationByIdUseCase(Get.find()),
+      fenix: true,
+    );
+    Get.lazyPut<UpdateRegistrationUseCase>(
+      () => UpdateRegistrationUseCase(Get.find()),
+      fenix: true,
+    );
+    Get.lazyPut<DeleteRegistrationUseCase>(
+      () => DeleteRegistrationUseCase(Get.find()),
       fenix: true,
     );
 
@@ -160,6 +192,7 @@ class AppRoutes {
   static const String adminAddPromoter = '/admin/promoters/add';
   static const String adminAddLeader = '/admin/leaders/add';
   static const String adminUserManagement = '/admin/users';
+  static const String registrations = '/registrations';
 }
 
 class AppPages {
@@ -260,6 +293,19 @@ class AppPages {
       page: () => const AdminAddLeaderPage(),
       binding: BindingsBuilder(() {
         Get.put<AdminUserFormController>(AdminLeaderFormController());
+      }),
+    ),
+    GetPage(
+      name: AppRoutes.registrations,
+      page: () => const RegistrationPage(),
+      binding: BindingsBuilder(() {
+        Get.put(RegistrationController(
+          createRegistrationUseCase: Get.find(),
+          getRegistrationsUseCase: Get.find(),
+          getRegistrationByIdUseCase: Get.find(),
+          updateRegistrationUseCase: Get.find(),
+          deleteRegistrationUseCase: Get.find(),
+        ));
       }),
     ),
   ];

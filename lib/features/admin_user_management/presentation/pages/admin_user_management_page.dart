@@ -23,8 +23,7 @@ class AdminUserManagementPage extends GetView<AdminUserController> {
         background = AppColors.danger;
         break;
       case SONotifierType.info:
-      default:
-        background = AppColors.secondary;
+      background = AppColors.secondary;
     }
 
     if (notifier.message == null || notifier.message!.isEmpty) {
@@ -132,7 +131,7 @@ class AdminUserManagementPage extends GetView<AdminUserController> {
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    value: role,
+                    initialValue: role,
                     decoration: const InputDecoration(labelText: 'Rol'),
                     items: const [
                       DropdownMenuItem(value: 'promoter', child: Text('Promovido')),
@@ -326,7 +325,7 @@ class _UserTable extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: _badgeColor(user.status).withOpacity(0.12),
+                      color: _badgeColor(user.status).withAlpha((255 * 0.12).round()),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -383,11 +382,11 @@ class _EmptyState extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.secondary.withOpacity(0.12)),
+        border: Border.all(color: AppColors.secondary.withAlpha((255 * 0.12).round())),
       ),
       child: Column(
         children: [
-          Icon(Icons.people_outline, color: AppColors.secondary.withOpacity(0.6), size: 60),
+          Icon(Icons.people_outline, color: AppColors.secondary.withAlpha((255 * 0.6).round()), size: 60),
           const SizedBox(height: 16),
           Text(
             'Aún no hay usuarios registrados',

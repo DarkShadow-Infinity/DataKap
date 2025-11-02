@@ -12,6 +12,6 @@ class SubmitRegistrationUseCase {
   Future<Either<Failure, RegistrationEntity>> execute(
     RegistrationRequest request,
   ) {
-    return _repository.submitRegistration(request);
+    return _repository.createRegistration(RegistrationEntity.fromRequest(request));
   }
 }
