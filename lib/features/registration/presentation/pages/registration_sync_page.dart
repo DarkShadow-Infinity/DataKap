@@ -9,6 +9,9 @@ import 'package:intl/intl.dart';
 class RegistrationSyncPage extends GetView<RegistrationSyncController> {
   const RegistrationSyncPage({super.key});
 
+  static final GlobalKey<ScaffoldState> _scaffoldKey =
+      GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context) {
     final dateFormat = DateFormat('dd/MM/yyyy HH:mm');
@@ -21,13 +24,24 @@ class RegistrationSyncPage extends GetView<RegistrationSyncController> {
     final showDrawer = role == UserRole.promoter || role == UserRole.leader;
 
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
+        leading: BackButton(onPressed: () => Navigator.of(context).maybePop()),
         title: const Text('Sincronización de registros'),
         actions: [
+          if (showDrawer)
+            Builder(
+              builder: (context) => IconButton(
+                icon: const Icon(Icons.menu),
+                tooltip: 'Abrir menú',
+                onPressed: () => Scaffold.of(context).openDrawer(),
+              ),
+            ),
           Obx(() => IconButton(
                 icon: const Icon(Icons.refresh),
                 tooltip: 'Actualizar lista',
-                onPressed: controller.isLoading.value ? null : controller.loadPending,
+                onPressed:
+                    controller.isLoading.value ? null : controller.loadPending,
               )),
         ],
       ),
