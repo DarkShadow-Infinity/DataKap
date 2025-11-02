@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:datakap/features/auth/presentation/manager/admin_user_form_controller.dart';
 import 'package:datakap/features/auth/presentation/widgets/admin_user_form.dart';
 
-class AdminAddLeaderPage extends GetView<AdminLeaderFormController> {
+class AdminAddLeaderPage extends GetView<AdminUserFormController> {
   const AdminAddLeaderPage({super.key});
 
   @override
