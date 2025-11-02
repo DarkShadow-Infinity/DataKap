@@ -26,184 +26,202 @@ class HomeAdminPage extends GetView<AuthController> {
       drawer: const _AdminDrawer(),
       body: SafeArea(
         child: Obx(() {
-          final user = controller.currentUser.value;
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Bienvenido, administrador',
-                  style: Theme.of(context)
-                      .textTheme
-                      .headlineMedium
-                      ?.copyWith(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  user.email,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(color: AppColors.secondary),
-                ),
-                const SizedBox(height: 24),
-                Obx(() {
-                  final stats = [
-                    _SummaryStat(
-                      label: 'Promovidos registrados',
-                      value: adminUsers
-                          .countByRole('promoter', status: 'registered')
-                          .toString(),
-                      accent: AppColors.accent,
-                    ),
-                    _SummaryStat(
-                      label: 'Promovidos pendientes',
-                      value: adminUsers
-                          .countByRole('promoter', status: 'pending')
-                          .toString(),
-                      accent: AppColors.warning,
-                    ),
-                    _SummaryStat(
-                      label: 'Promovidos rechazados',
-                      value: adminUsers
-                          .countByRole('promoter', status: 'rejected')
-                          .toString(),
-                      accent: AppColors.danger,
-                    ),
-                    _SummaryStat(
-                      label: 'Líderes registrados',
-                      value: adminUsers
-                          .countByRole('leader', status: 'registered')
-                          .toString(),
-                      accent: AppColors.accent,
-                    ),
-                    _SummaryStat(
-                      label: 'Líderes pendientes',
-                      value: adminUsers
-                          .countByRole('leader', status: 'pending')
-                          .toString(),
-                      accent: AppColors.warning,
-                    ),
-                    _SummaryStat(
-                      label: 'Líderes rechazados',
-                      value: adminUsers
-                          .countByRole('leader', status: 'rejected')
-                          .toString(),
-                      accent: AppColors.danger,
-                    ),
-                  ];
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              final user = controller.currentUser.value;
+              final maxContentWidth = 1100.0;
+              final contentPadding = constraints.maxWidth > maxContentWidth
+                  ? EdgeInsets.symmetric(
+                      horizontal: (constraints.maxWidth - maxContentWidth) / 2 + 24,
+                      vertical: 24,
+                    )
+                  : const EdgeInsets.all(24);
 
-                  return LayoutBuilder(
-                    builder: (context, constraints) {
-                      final maxWidth = constraints.maxWidth;
-                      final columns = maxWidth >= 1000
-                          ? 3
-                          : maxWidth >= 600
-                              ? 2
-                              : 1;
-                      final spacing = 16.0;
-                      final totalSpacing = columns > 1
-                          ? spacing * (columns - 1)
-                          : 0;
-                      final itemWidth = (maxWidth - totalSpacing) / columns;
-
-                      return Wrap(
-                        spacing: spacing,
-                        runSpacing: spacing,
-                        children: stats
-                            .map(
-                              (stat) => SizedBox(
-                                width: itemWidth,
-                                child: _SummaryCard(stat: stat),
-                              ),
-                            )
-                            .toList(),
-                      );
-                    },
-                  );
-                }),
-                const SizedBox(height: 32),
-                Text(
-                  'Acciones rápidas',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleLarge
-                      ?.copyWith(fontWeight: FontWeight.bold),
+              return SingleChildScrollView(
+                padding: contentPadding,
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: maxContentWidth,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Bienvenido, administrador',
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineMedium
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          user.email,
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(color: AppColors.secondary),
+                        ),
+                        const SizedBox(height: 24),
+                        _SummarySection(adminUsers: adminUsers),
+                        const SizedBox(height: 32),
+                        Text(
+                          'Acciones rápidas',
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleLarge
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 16),
+                        const _QuickActionsGrid(),
+                      ],
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 16),
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    final width = constraints.maxWidth;
-                    final crossAxisCount = width >= 1100
-                        ? 3
-                        : width >= 700
-                            ? 2
-                            : 1;
-                    final mainAxisExtent = width >= 700 ? 200.0 : 220.0;
-                    final actions = [
-                      _QuickAction(
-                        title: 'Gestión de usuarios',
-                        subtitle:
-                            'Consulta, aprueba o rechaza promovidos y líderes.',
-                        icon: Icons.admin_panel_settings,
-                        color: AppColors.primary,
-                        onTap: () =>
-                            Get.toNamed(AppRoutes.adminUserManagement),
-                      ),
-                      _QuickAction(
-                        title: 'Agregar promovido',
-                        subtitle:
-                            'Envía una invitación con contraseña temporal.',
-                        icon: Icons.person_add_alt,
-                        color: AppColors.secondary,
-                        onTap: () => Get.toNamed(AppRoutes.adminAddPromoter),
-                      ),
-                      _QuickAction(
-                        title: 'Agregar líder',
-                        subtitle: 'Asigna metas y códigos de verificación.',
-                        icon: Icons.supervisor_account,
-                        color: AppColors.info,
-                        onTap: () => Get.toNamed(AppRoutes.adminAddLeader),
-                      ),
-                      _QuickAction(
-                        title: 'Sincronizar registros',
-                        subtitle:
-                            'Envía la información capturada desde campo.',
-                        icon: Icons.sync,
-                        color: AppColors.warning,
-                        onTap: () => Get.toNamed(AppRoutes.registrationSync),
-                      ),
-                    ];
-
-                    return GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: crossAxisCount,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                        mainAxisExtent: mainAxisExtent,
-                      ),
-                      itemCount: actions.length,
-                      itemBuilder: (context, index) {
-                        final action = actions[index];
-                        return DashboardSectionCard(
-                          title: action.title,
-                          subtitle: action.subtitle,
-                          icon: action.icon,
-                          backgroundColor: action.color,
-                          onTap: action.onTap,
-                        );
-                      },
-                    );
-                  },
-                ),
-              ],
-            ),
+              );
+            },
           );
         }),
       ),
+    );
+  }
+}
+
+class _SummarySection extends StatelessWidget {
+  const _SummarySection({required this.adminUsers});
+
+  final AdminUserController adminUsers;
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final stats = [
+        _SummaryStat(
+          label: 'Promovidos registrados',
+          value:
+              adminUsers.countByRole('promoter', status: 'registered').toString(),
+          accent: AppColors.accent,
+        ),
+        _SummaryStat(
+          label: 'Promovidos pendientes',
+          value: adminUsers.countByRole('promoter', status: 'pending').toString(),
+          accent: AppColors.warning,
+        ),
+        _SummaryStat(
+          label: 'Promovidos rechazados',
+          value:
+              adminUsers.countByRole('promoter', status: 'rejected').toString(),
+          accent: AppColors.danger,
+        ),
+        _SummaryStat(
+          label: 'Líderes registrados',
+          value: adminUsers.countByRole('leader', status: 'registered').toString(),
+          accent: AppColors.accent,
+        ),
+        _SummaryStat(
+          label: 'Líderes pendientes',
+          value: adminUsers.countByRole('leader', status: 'pending').toString(),
+          accent: AppColors.warning,
+        ),
+        _SummaryStat(
+          label: 'Líderes rechazados',
+          value: adminUsers.countByRole('leader', status: 'rejected').toString(),
+          accent: AppColors.danger,
+        ),
+      ];
+
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          final width = constraints.maxWidth;
+          final crossAxisCount = width >= 720 ? 2 : 1;
+          final mainAxisExtent = width >= 720 ? 132.0 : 148.0;
+
+          return GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: stats.length,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              mainAxisExtent: mainAxisExtent,
+            ),
+            itemBuilder: (context, index) => _SummaryCard(stat: stats[index]),
+          );
+        },
+      );
+    });
+  }
+}
+
+class _QuickActionsGrid extends StatelessWidget {
+  const _QuickActionsGrid();
+
+  @override
+  Widget build(BuildContext context) {
+    final actions = [
+      _QuickAction(
+        title: 'Gestión de usuarios',
+        subtitle: 'Consulta, aprueba o rechaza promovidos y líderes.',
+        icon: Icons.admin_panel_settings,
+        color: AppColors.primary,
+        onTap: () => Get.toNamed(AppRoutes.adminUserManagement),
+      ),
+      _QuickAction(
+        title: 'Agregar promovido',
+        subtitle: 'Envía una invitación con contraseña temporal.',
+        icon: Icons.person_add_alt,
+        color: AppColors.secondary,
+        onTap: () => Get.toNamed(AppRoutes.adminAddPromoter),
+      ),
+      _QuickAction(
+        title: 'Agregar líder',
+        subtitle: 'Asigna metas y códigos de verificación.',
+        icon: Icons.supervisor_account,
+        color: AppColors.info,
+        onTap: () => Get.toNamed(AppRoutes.adminAddLeader),
+      ),
+      _QuickAction(
+        title: 'Sincronizar registros',
+        subtitle: 'Envía la información capturada desde campo.',
+        icon: Icons.sync,
+        color: AppColors.warning,
+        onTap: () => Get.toNamed(AppRoutes.registrationSync),
+      ),
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final crossAxisCount = width >= 1100
+            ? 3
+            : width >= 760
+                ? 2
+                : 1;
+        final mainAxisExtent = width >= 760 ? 204.0 : 224.0;
+
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: actions.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            mainAxisExtent: mainAxisExtent,
+          ),
+          itemBuilder: (context, index) {
+            final action = actions[index];
+            return DashboardSectionCard(
+              title: action.title,
+              subtitle: action.subtitle,
+              icon: action.icon,
+              backgroundColor: action.color,
+              onTap: action.onTap,
+            );
+          },
+        );
+      },
     );
   }
 }
