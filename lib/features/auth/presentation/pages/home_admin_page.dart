@@ -15,13 +15,6 @@ class HomeAdminPage extends GetView<AuthController> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Panel de administración'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: controller.logout,
-            tooltip: 'Cerrar sesión',
-          )
-        ],
       ),
       drawer: const _AdminDrawer(),
       body: SafeArea(
