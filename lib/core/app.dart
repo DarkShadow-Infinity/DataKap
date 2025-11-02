@@ -251,7 +251,7 @@ class AppPages {
       name: AppRoutes.adminAddPromoter,
       page: () => const AdminAddPromoterPage(),
       binding: BindingsBuilder(() {
-        Get.put(AdminPromoterFormController());
+        Get.put<AdminUserFormController>(AdminPromoterFormController());
       }),
     ),
 
@@ -259,7 +259,7 @@ class AppPages {
       name: AppRoutes.adminAddLeader,
       page: () => const AdminAddLeaderPage(),
       binding: BindingsBuilder(() {
-        Get.put(AdminLeaderFormController());
+        Get.put<AdminUserFormController>(AdminLeaderFormController());
       }),
     ),
   ];
