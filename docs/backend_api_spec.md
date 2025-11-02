@@ -374,4 +374,19 @@ Devuelve roles válidos (`admin`, `leader`, `promoter`).
 - **Versionado**: mantener campo `apiVersion` en la respuesta de `/profile` o `/admin/dashboard` para detectar incompatibilidades futuras.
 - **Auditoría**: registrar `performedBy` (uid del admin) en cambios de usuarios.
 
+## 9. Cobertura en la app móvil
+
+La aplicación Flutter ya tiene pantallas y controladores que consumen los datos descritos en esta especificación. Una vez que el backend exponga los endpoints, basta con reemplazar las implementaciones actuales de Firebase dentro de la capa `data/` para conectar la UI existente.
+
+| Módulo | Pantallas/controladores relevantes | Endpoints principales |
+| --- | --- | --- |
+| Autenticación | `LoginPage`, `AuthController` | `/auth/login`, `/auth/refresh`, `/auth/logout`, `/profile` |
+| Invitaciones admin | `AdminAddPromoterPage`, `AdminAddLeaderPage`, `AdminUserFormController` | `/admin/users`, `/auth/complete-invite` |
+| Dashboard admin | `HomeAdminPage`, `AdminUserController` | `/admin/dashboard/summary`, `/admin/users`, `/admin/users/{id}` |
+| Captura manual / INE | `ManualRegistrationPage`, `IneRegistrationPage`, `RoleRegistrationController` | `/registrations`, `/registrations/{id}`, `/registrations/sync` |
+| Sincronización offline | `RegistrationSyncPage`, `RegistrationSyncController` | `/registrations/sync`, `/registrations/sync/summary` |
+| Navegación por rol | `RoleOptionsPage`, `RoleNavigationDrawer` | `/profile`, catálogos |
+
+Los controladores ya encapsulan el manejo offline, la verificación de conectividad y la propagación de eventos UI mediante `SONotifier`, por lo que el reemplazo de Firebase por un backend REST implica principalmente nuevas implementaciones en `data/data_sources` y `data/repositories` sin cambios en la capa de presentación.
+
 Con esta API la app actual puede operar en modo online/offline, gestionar roles y realizar el flujo completo de capturas y sincronización sin depender de Firebase.
