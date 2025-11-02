@@ -150,8 +150,8 @@ class _SummarySection extends StatelessWidget {
       return LayoutBuilder(
         builder: (context, constraints) {
           final width = constraints.maxWidth;
-          final crossAxisCount = width >= 360 ? 2 : 1;
-          final mainAxisExtent = width >= 360 ? 128.0 : 148.0;
+          final crossAxisCount = width >= 960 ? 3 : 2;
+          final mainAxisExtent = width >= 720 ? 120.0 : 136.0;
 
           return GridView.builder(
             shrinkWrap: true,
