@@ -49,54 +49,78 @@ class HomeAdminPage extends GetView<AuthController> {
                 ),
                 const SizedBox(height: 24),
                 Obx(() {
-                  final promoterRegistered =
-                      adminUsers.countByRole('promoter', status: 'registered');
-                  final promoterPending =
-                      adminUsers.countByRole('promoter', status: 'pending');
-                  final promoterRejected =
-                      adminUsers.countByRole('promoter', status: 'rejected');
-                  final leaderRegistered =
-                      adminUsers.countByRole('leader', status: 'registered');
-                  final leaderPending =
-                      adminUsers.countByRole('leader', status: 'pending');
-                  final leaderRejected =
-                      adminUsers.countByRole('leader', status: 'rejected');
+                  final stats = [
+                    _SummaryStat(
+                      label: 'Promovidos registrados',
+                      value: adminUsers
+                          .countByRole('promoter', status: 'registered')
+                          .toString(),
+                      accent: AppColors.accent,
+                    ),
+                    _SummaryStat(
+                      label: 'Promovidos pendientes',
+                      value: adminUsers
+                          .countByRole('promoter', status: 'pending')
+                          .toString(),
+                      accent: AppColors.warning,
+                    ),
+                    _SummaryStat(
+                      label: 'Promovidos rechazados',
+                      value: adminUsers
+                          .countByRole('promoter', status: 'rejected')
+                          .toString(),
+                      accent: AppColors.danger,
+                    ),
+                    _SummaryStat(
+                      label: 'Líderes registrados',
+                      value: adminUsers
+                          .countByRole('leader', status: 'registered')
+                          .toString(),
+                      accent: AppColors.accent,
+                    ),
+                    _SummaryStat(
+                      label: 'Líderes pendientes',
+                      value: adminUsers
+                          .countByRole('leader', status: 'pending')
+                          .toString(),
+                      accent: AppColors.warning,
+                    ),
+                    _SummaryStat(
+                      label: 'Líderes rechazados',
+                      value: adminUsers
+                          .countByRole('leader', status: 'rejected')
+                          .toString(),
+                      accent: AppColors.danger,
+                    ),
+                  ];
 
-                  return Wrap(
-                    spacing: 16,
-                    runSpacing: 16,
-                    children: [
-                      _SummaryChip(
-                        label: 'Promovidos registrados',
-                        value: promoterRegistered.toString(),
-                        accent: AppColors.accent,
-                      ),
-                      _SummaryChip(
-                        label: 'Promovidos pendientes',
-                        value: promoterPending.toString(),
-                        accent: AppColors.warning,
-                      ),
-                      _SummaryChip(
-                        label: 'Promovidos rechazados',
-                        value: promoterRejected.toString(),
-                        accent: AppColors.danger,
-                      ),
-                      _SummaryChip(
-                        label: 'Líderes registrados',
-                        value: leaderRegistered.toString(),
-                        accent: AppColors.accent,
-                      ),
-                      _SummaryChip(
-                        label: 'Líderes pendientes',
-                        value: leaderPending.toString(),
-                        accent: AppColors.warning,
-                      ),
-                      _SummaryChip(
-                        label: 'Líderes rechazados',
-                        value: leaderRejected.toString(),
-                        accent: AppColors.danger,
-                      ),
-                    ],
+                  return LayoutBuilder(
+                    builder: (context, constraints) {
+                      final maxWidth = constraints.maxWidth;
+                      final columns = maxWidth >= 1000
+                          ? 3
+                          : maxWidth >= 600
+                              ? 2
+                              : 1;
+                      final spacing = 16.0;
+                      final totalSpacing = columns > 1
+                          ? spacing * (columns - 1)
+                          : 0;
+                      final itemWidth = (maxWidth - totalSpacing) / columns;
+
+                      return Wrap(
+                        spacing: spacing,
+                        runSpacing: spacing,
+                        children: stats
+                            .map(
+                              (stat) => SizedBox(
+                                width: itemWidth,
+                                child: _SummaryCard(stat: stat),
+                              ),
+                            )
+                            .toList(),
+                      );
+                    },
                   );
                 }),
                 const SizedBox(height: 32),
@@ -108,44 +132,72 @@ class HomeAdminPage extends GetView<AuthController> {
                       ?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
-                GridView.count(
-                  shrinkWrap: true,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                  crossAxisCount:
-                      MediaQuery.of(context).size.width > 900 ? 3 : 2,
-                  childAspectRatio: 1.1,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: [
-                    DashboardSectionCard(
-                      title: 'Gestión de usuarios',
-                      subtitle: 'Consulta, aprueba o rechaza promovidos y líderes.',
-                      icon: Icons.admin_panel_settings,
-                      backgroundColor: AppColors.primary,
-                      onTap: () => Get.toNamed(AppRoutes.adminUserManagement),
-                    ),
-                    DashboardSectionCard(
-                      title: 'Agregar promovido',
-                      subtitle: 'Envía una invitación con contraseña temporal.',
-                      icon: Icons.person_add_alt,
-                      backgroundColor: AppColors.secondary,
-                      onTap: () => Get.toNamed(AppRoutes.adminAddPromoter),
-                    ),
-                    DashboardSectionCard(
-                      title: 'Agregar líder',
-                      subtitle: 'Asigna metas y códigos de verificación.',
-                      icon: Icons.supervisor_account,
-                      backgroundColor: AppColors.info,
-                      onTap: () => Get.toNamed(AppRoutes.adminAddLeader),
-                    ),
-                    DashboardSectionCard(
-                      title: 'Sincronizar registros',
-                      subtitle: 'Envía la información capturada desde campo.',
-                      icon: Icons.sync,
-                      backgroundColor: AppColors.warning,
-                      onTap: () => Get.toNamed(AppRoutes.registrationSync),
-                    ),
-                  ],
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final width = constraints.maxWidth;
+                    final crossAxisCount = width >= 1100
+                        ? 3
+                        : width >= 700
+                            ? 2
+                            : 1;
+                    final mainAxisExtent = width >= 700 ? 200.0 : 220.0;
+                    final actions = [
+                      _QuickAction(
+                        title: 'Gestión de usuarios',
+                        subtitle:
+                            'Consulta, aprueba o rechaza promovidos y líderes.',
+                        icon: Icons.admin_panel_settings,
+                        color: AppColors.primary,
+                        onTap: () =>
+                            Get.toNamed(AppRoutes.adminUserManagement),
+                      ),
+                      _QuickAction(
+                        title: 'Agregar promovido',
+                        subtitle:
+                            'Envía una invitación con contraseña temporal.',
+                        icon: Icons.person_add_alt,
+                        color: AppColors.secondary,
+                        onTap: () => Get.toNamed(AppRoutes.adminAddPromoter),
+                      ),
+                      _QuickAction(
+                        title: 'Agregar líder',
+                        subtitle: 'Asigna metas y códigos de verificación.',
+                        icon: Icons.supervisor_account,
+                        color: AppColors.info,
+                        onTap: () => Get.toNamed(AppRoutes.adminAddLeader),
+                      ),
+                      _QuickAction(
+                        title: 'Sincronizar registros',
+                        subtitle:
+                            'Envía la información capturada desde campo.',
+                        icon: Icons.sync,
+                        color: AppColors.warning,
+                        onTap: () => Get.toNamed(AppRoutes.registrationSync),
+                      ),
+                    ];
+
+                    return GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: crossAxisCount,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                        mainAxisExtent: mainAxisExtent,
+                      ),
+                      itemCount: actions.length,
+                      itemBuilder: (context, index) {
+                        final action = actions[index];
+                        return DashboardSectionCard(
+                          title: action.title,
+                          subtitle: action.subtitle,
+                          icon: action.icon,
+                          backgroundColor: action.color,
+                          onTap: action.onTap,
+                        );
+                      },
+                    );
+                  },
                 ),
               ],
             ),
@@ -214,8 +266,53 @@ class _AdminDrawer extends StatelessWidget {
   }
 }
 
-class _SummaryChip extends StatelessWidget {
-  const _SummaryChip({
+class _SummaryCard extends StatelessWidget {
+  const _SummaryCard({required this.stat});
+
+  final _SummaryStat stat;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: stat.accent.withOpacity(0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: stat.accent.withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            stat.value,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            stat.label,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: stat.accent.withOpacity(0.9),
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SummaryStat {
+  const _SummaryStat({
     required this.label,
     required this.value,
     required this.accent,
@@ -224,35 +321,20 @@ class _SummaryChip extends StatelessWidget {
   final String label;
   final String value;
   final Color accent;
+}
 
-  @override
-  Widget build(BuildContext context) {
-    return Chip(
-      labelPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: accent.withOpacity(0.2)),
-      ),
-      label: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppColors.primary,
-            ),
-          ),
-          const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(fontSize: 12, color: accent.withOpacity(0.8)),
-            ),
-        ],
-      ),
-    );
-  }
+class _QuickAction {
+  const _QuickAction({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
 }
