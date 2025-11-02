@@ -25,65 +25,82 @@ class HomeAdminPage extends GetView<AuthController> {
       ),
       drawer: const _AdminDrawer(),
       body: SafeArea(
-        child: Obx(() {
-          return LayoutBuilder(
-            builder: (context, constraints) {
-              final user = controller.currentUser.value;
-              final maxContentWidth = 1100.0;
-              final contentPadding = constraints.maxWidth > maxContentWidth
-                  ? EdgeInsets.symmetric(
-                      horizontal: (constraints.maxWidth - maxContentWidth) / 2 + 24,
-                      vertical: 24,
-                    )
-                  : const EdgeInsets.all(24);
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final maxContentWidth = 1100.0;
+            final contentPadding = constraints.maxWidth > maxContentWidth
+                ? EdgeInsets.symmetric(
+                    horizontal: (constraints.maxWidth - maxContentWidth) / 2 + 24,
+                    vertical: 24,
+                  )
+                : const EdgeInsets.all(24);
 
-              return SingleChildScrollView(
-                padding: contentPadding,
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxWidth: maxContentWidth,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Bienvenido, administrador',
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineMedium
-                              ?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          user.email,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium
-                              ?.copyWith(color: AppColors.secondary),
-                        ),
-                        const SizedBox(height: 24),
-                        _SummarySection(adminUsers: adminUsers),
-                        const SizedBox(height: 32),
-                        Text(
-                          'Acciones rápidas',
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleLarge
-                              ?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 16),
-                        const _QuickActionsGrid(),
-                      ],
-                    ),
+            return SingleChildScrollView(
+              padding: contentPadding,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: maxContentWidth,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _AdminHeader(controller: controller),
+                      const SizedBox(height: 24),
+                      _SummarySection(adminUsers: adminUsers),
+                      const SizedBox(height: 32),
+                      Text(
+                        'Acciones rápidas',
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleLarge
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 16),
+                      const _QuickActionsGrid(),
+                    ],
                   ),
                 ),
-              );
-            },
-          );
-        }),
+              ),
+            );
+          },
+        ),
       ),
     );
+  }
+}
+
+class _AdminHeader extends StatelessWidget {
+  const _AdminHeader({required this.controller});
+
+  final AuthController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final user = controller.currentUser.value;
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Bienvenido, administrador',
+            style: Theme.of(context)
+                .textTheme
+                .headlineMedium
+                ?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            user.email,
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(color: AppColors.secondary),
+          ),
+        ],
+      );
+    });
   }
 }
 
@@ -133,8 +150,8 @@ class _SummarySection extends StatelessWidget {
       return LayoutBuilder(
         builder: (context, constraints) {
           final width = constraints.maxWidth;
-          final crossAxisCount = width >= 720 ? 2 : 1;
-          final mainAxisExtent = width >= 720 ? 132.0 : 148.0;
+          final crossAxisCount = width >= 360 ? 2 : 1;
+          final mainAxisExtent = width >= 360 ? 128.0 : 148.0;
 
           return GridView.builder(
             shrinkWrap: true,

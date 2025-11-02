@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:datakap/features/auth/presentation/manager/admin_user_form_controller.dart';
 import 'package:datakap/features/auth/presentation/widgets/admin_user_form.dart';
 
-class AdminAddPromoterPage extends GetView<AdminPromoterFormController> {
+class AdminAddPromoterPage extends GetView<AdminUserFormController> {
   const AdminAddPromoterPage({super.key});
 
   @override
