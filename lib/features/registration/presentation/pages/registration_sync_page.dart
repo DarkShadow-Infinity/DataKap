@@ -29,14 +29,6 @@ class RegistrationSyncPage extends GetView<RegistrationSyncController> {
         leading: BackButton(onPressed: () => Navigator.of(context).maybePop()),
         title: const Text('Sincronización de registros'),
         actions: [
-          if (showDrawer)
-            Builder(
-              builder: (context) => IconButton(
-                icon: const Icon(Icons.menu),
-                tooltip: 'Abrir menú',
-                onPressed: () => Scaffold.of(context).openDrawer(),
-              ),
-            ),
           Obx(() => IconButton(
                 icon: const Icon(Icons.refresh),
                 tooltip: 'Actualizar lista',
