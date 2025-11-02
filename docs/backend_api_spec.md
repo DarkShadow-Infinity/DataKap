@@ -51,6 +51,37 @@ Inicia sesión con email y contraseña.
 - 401 `INVALID_CREDENTIALS`
 - 423 `USER_DISABLED`
 
+### POST `/auth/complete-invite`
+Finaliza el primer acceso de promotores o líderes invitados. Valida el código de verificación recibido por correo y fuerza el cambio de contraseña temporal.
+
+**Request**
+```json
+{
+  "email": "promoter@example.com",
+  "temporaryPassword": "Tmp#2025",
+  "verificationCode": "ABCD1234",
+  "newPassword": "Seguro#123"
+}
+```
+
+**Response 200**
+```json
+{
+  "token": "jwt-token",
+  "refreshToken": "jwt-refresh",
+  "expiresIn": 3600,
+  "user": {
+    "id": "usr-99",
+    "email": "promoter@example.com",
+    "role": "promoter"
+  }
+}
+```
+
+**Errores comunes**
+- 400 `INVALID_VERIFICATION_CODE`
+- 410 `INVITE_EXPIRED`
+
 ### POST `/auth/refresh`
 Renueva el token cuando la app recupere conexión.
 
@@ -256,7 +287,8 @@ Crea un promotor o líder con contraseña temporal y código de verificación.
   "phone": "5512345678",
   "role": "promoter",
   "goal": 150,
-  "sendEmail": true
+  "sendEmail": true,
+  "expiresInHours": 48
 }
 ```
 
@@ -265,7 +297,8 @@ Crea un promotor o líder con contraseña temporal y código de verificación.
 {
   "id": "usr-99",
   "temporaryPassword": "Tmp#2025",
-  "verificationCode": "KLMN4567"
+  "verificationCode": "KLMN4567",
+  "expiresAt": "2025-02-01T18:00:00Z"
 }
 ```
 
