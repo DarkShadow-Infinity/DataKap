@@ -20,22 +20,27 @@ class RoleNavigationDrawer extends StatelessWidget {
   String get _homeRoute =>
       role == UserRole.leader ? AppRoutes.homeLeader : AppRoutes.homePromoter;
 
-  void _closeDrawer() {
-    if (Get.isDrawerOpen ?? false) {
-      Get.back();
+  void _closeDrawer(BuildContext context) {
+    final navigator = Navigator.of(context);
+    if (navigator.canPop()) {
+      navigator.pop();
     }
   }
 
-  void _navigateTo(String route, {Map<String, dynamic>? arguments}) {
-    _closeDrawer();
+  void _navigateTo(
+    BuildContext context,
+    String route, {
+    Map<String, dynamic>? arguments,
+  }) {
+    _closeDrawer(context);
     if (Get.currentRoute == route) {
       return;
     }
     Get.toNamed(route, arguments: arguments);
   }
 
-  void _goHome() {
-    _closeDrawer();
+  void _goHome(BuildContext context) {
+    _closeDrawer(context);
     if (Get.currentRoute == _homeRoute) {
       return;
     }
@@ -90,12 +95,13 @@ class RoleNavigationDrawer extends StatelessWidget {
                   ListTile(
                     leading: const Icon(Icons.home_outlined),
                     title: const Text('Inicio'),
-                    onTap: _goHome,
+                    onTap: () => _goHome(context),
                   ),
                   ListTile(
                     leading: const Icon(Icons.credit_card),
                     title: const Text('Registro con INE'),
                     onTap: () => _navigateTo(
+                      context,
                       AppRoutes.ineRegistration,
                       arguments: {'role': role},
                     ),
@@ -104,6 +110,7 @@ class RoleNavigationDrawer extends StatelessWidget {
                     leading: const Icon(Icons.edit_note),
                     title: const Text('Registro manual'),
                     onTap: () => _navigateTo(
+                      context,
                       AppRoutes.manualRegistration,
                       arguments: {'role': role},
                     ),
@@ -112,6 +119,7 @@ class RoleNavigationDrawer extends StatelessWidget {
                     leading: const Icon(Icons.sync),
                     title: const Text('Sincronización'),
                     onTap: () => _navigateTo(
+                      context,
                       AppRoutes.registrationSync,
                       arguments: {'role': role},
                     ),
@@ -124,7 +132,7 @@ class RoleNavigationDrawer extends StatelessWidget {
               leading: const Icon(Icons.logout),
               title: const Text('Cerrar sesión'),
               onTap: () {
-                _closeDrawer();
+                _closeDrawer(context);
                 controller.logout();
               },
             ),
