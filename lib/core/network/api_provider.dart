@@ -17,7 +17,7 @@ Dio createApiDio({required AuthTokenManager tokenManager}) {
       baseUrl: const String.fromEnvironment(
         'API_BASE_URL',
         // Se usa 10.0.2.2 como default para desarrollo en emulador Android.
-        defaultValue: 'http://10.0.2.2:8000',
+        defaultValue: 'http://192.168.5.178:8000',
       ),
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 20),
@@ -230,7 +230,7 @@ class APIProvider {
 
     return SOApiResponse(
       success: isSuccess,
-      data: isSuccess,
+      data: response.data,
       responseCode: code,
       message: message,
     );
