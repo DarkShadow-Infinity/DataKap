@@ -76,6 +76,8 @@ dependencies:
   # json_annotation: Anotaciones para generar código de serialización JSON/Firestore
   json_annotation: ^4.8.1
   http: ^1.2.0
+  dio: ^5.4.3
+  logger: ^2.3.0
 
 dev_dependencies:
   flutter_test:

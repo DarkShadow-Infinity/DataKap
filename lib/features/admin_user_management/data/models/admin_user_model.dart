@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:datakap/features/admin_user_management/domain/entities/admin_user_entity.dart';
 
 class AdminUserModel extends AdminUserEntity {
@@ -7,27 +8,13 @@ class AdminUserModel extends AdminUserEntity {
     required super.fullName,
     required super.phone,
     required super.role,
-    super.goal,
+    required super.goal,
+    required super.verificationCode,
     required super.status,
-    super.verificationCode,
-    required super.createdAt,
     required super.isActive,
+    required super.createdAt,
+    super.updatedAt,
   });
-
-  factory AdminUserModel.fromJson(Map<String, dynamic> json) {
-    return AdminUserModel(
-      id: json['id'] as String,
-      email: json['email'] as String,
-      fullName: json['fullName'] as String,
-      phone: json['phone'] as String,
-      role: json['role'] as String,
-      goal: json['goal'] as int?,
-      status: json['status'] as String,
-      verificationCode: json['verificationCode'] as String?,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      isActive: json['isActive'] as bool,
-    );
-  }
 
   factory AdminUserModel.fromEntity(AdminUserEntity entity) {
     return AdminUserModel(
@@ -37,40 +24,43 @@ class AdminUserModel extends AdminUserEntity {
       phone: entity.phone,
       role: entity.role,
       goal: entity.goal,
-      status: entity.status,
       verificationCode: entity.verificationCode,
-      createdAt: entity.createdAt,
+      status: entity.status,
       isActive: entity.isActive,
+      createdAt: entity.createdAt,
+      updatedAt: entity.updatedAt,
     );
   }
 
-  AdminUserEntity toEntity() {
-    return AdminUserEntity(
-      id: id,
-      email: email,
-      fullName: fullName,
-      phone: phone,
-      role: role,
-      goal: goal,
-      status: status,
-      verificationCode: verificationCode,
-      createdAt: createdAt,
-      isActive: isActive,
+  factory AdminUserModel.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>? ?? {};
+    return AdminUserModel(
+      id: doc.id,
+      email: data['email'] ?? '',
+      fullName: data['fullName'] ?? '',
+      phone: data['phone'] ?? '',
+      role: data['role'] ?? '',
+      goal: data['goal'] ?? 0,
+      verificationCode: data['verificationCode'] ?? '',
+      status: data['status'] ?? 'pending',
+      isActive: data['isActive'] ?? false,
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
       'email': email,
       'fullName': fullName,
       'phone': phone,
       'role': role,
       'goal': goal,
-      'status': status,
       'verificationCode': verificationCode,
-      'createdAt': createdAt.toIso8601String(),
+      'status': status,
       'isActive': isActive,
+      'createdAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
     };
   }
 }

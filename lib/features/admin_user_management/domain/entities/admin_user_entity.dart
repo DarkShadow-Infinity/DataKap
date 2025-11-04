@@ -10,6 +10,7 @@ class AdminUserEntity extends Equatable {
   final String status;
   final String? verificationCode;
   final DateTime createdAt;
+  final DateTime? updatedAt;
   final bool isActive;
 
   const AdminUserEntity({
@@ -22,6 +23,7 @@ class AdminUserEntity extends Equatable {
     required this.status,
     this.verificationCode,
     required this.createdAt,
+    this.updatedAt,
     required this.isActive,
   });
 
@@ -36,10 +38,11 @@ class AdminUserEntity extends Equatable {
         status,
         verificationCode,
         createdAt,
+        updatedAt,
         isActive,
       ];
 
   @override
   String toString() =>
-      'AdminUserEntity(id: $id, email: $email, fullName: $fullName, phone: $phone, role: $role, goal: $goal, status: $status, verificationCode: $verificationCode, createdAt: $createdAt, isActive: $isActive)';
+      'AdminUserEntity(id: $id, email: $email, fullName: $fullName, phone: $phone, role: $role, goal: $goal, status: $status, verificationCode: $verificationCode, createdAt: $createdAt, updatedAt: $updatedAt, isActive: $isActive)';
 }

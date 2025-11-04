@@ -2,11 +2,16 @@ import 'package:datakap/features/admin_user_management/domain/entities/admin_use
 import 'package:datakap/features/admin_user_management/domain/repositories/admin_user_repository.dart';
 
 class WatchAdminUsersUseCase {
-  WatchAdminUsersUseCase(this._repository);
+  final AdminUserRepository repository;
 
-  final AdminUserRepository _repository;
+  WatchAdminUsersUseCase(this.repository);
 
   Stream<List<AdminUserEntity>> execute() {
-    return _repository.watchUsers();
+    return repository.watchUsers().map(
+          (either) => either.fold(
+            (failure) => [], // On failure, return an empty list for the stream
+            (users) => users,
+          ),
+        );
   }
 }

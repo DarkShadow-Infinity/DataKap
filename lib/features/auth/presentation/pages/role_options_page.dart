@@ -1,9 +1,10 @@
+import 'package:datakap/core/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:datakap/core/app.dart';
 import 'package:datakap/core/theme/app_theme.dart';
 import 'package:datakap/features/auth/domain/entities/user_entity.dart';
 import 'package:datakap/features/auth/presentation/manager/auth_controller.dart';
+import 'package:datakap/features/auth/presentation/widgets/option_card.dart'; // <--- IMPORTAMOS EL NUEVO WIDGET
 import 'package:datakap/features/auth/presentation/widgets/role_navigation_drawer.dart';
 
 class RoleOptionsPage extends GetView<AuthController> {
@@ -75,7 +76,7 @@ class RoleOptionsPage extends GetView<AuthController> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                _OptionCard(
+                OptionCard(
                   title: 'Registro con INE',
                   description:
                       'Captura la credencial, valida los datos y completa el formulario automáticamente.',
@@ -87,10 +88,10 @@ class RoleOptionsPage extends GetView<AuthController> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                _OptionCard(
+                OptionCard(
                   title: 'Registro manual',
                   description:
-                      'Captura los datos manualmente si no tienes disponible la credencial INE.',
+                      'Captura los datos manually si no tienes disponible la credencial INE.',
                   icon: Icons.edit_note,
                   color: AppColors.secondary,
                   onTap: () => Get.toNamed(
@@ -99,7 +100,7 @@ class RoleOptionsPage extends GetView<AuthController> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                _OptionCard(
+                OptionCard(
                   title: 'Sincronizar registros',
                   description:
                       'Envía los registros guardados en el dispositivo cuando recuperes la conexión.',
@@ -108,28 +109,6 @@ class RoleOptionsPage extends GetView<AuthController> {
                   onTap: () => Get.toNamed(
                     AppRoutes.registrationSync,
                     arguments: {'role': role},
-                  ),
-                ),
-                const SizedBox(height: 32),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    color: AppColors.surface,
-                    border: Border.all(color: AppColors.secondary.withAlpha((255 * 0.12).round())),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Icon(Icons.info_outline, color: AppColors.secondary),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'Recuerda verificar que todos los datos estén completos y sean legibles antes de enviar el registro.',
-                          style: TextStyle(color: AppColors.secondary),
-                        ),
-                      ),
-                    ],
                   ),
                 ),
               ],
@@ -141,66 +120,4 @@ class RoleOptionsPage extends GetView<AuthController> {
   }
 }
 
-class _OptionCard extends StatelessWidget {
-  const _OptionCard({
-    required this.title,
-    required this.description,
-    required this.icon,
-    required this.color,
-    this.onTap,
-  });
-
-  final String title;
-  final String description;
-  final IconData icon;
-  final Color color;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Ink(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          color: color.withAlpha((255 * 0.1).round()),
-          border: Border.all(color: color.withAlpha((255 * 0.4).round()), width: 1.5),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: Colors.white),
-            ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    description,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ],
-              ),
-            ),
-            const Icon(Icons.arrow_forward_ios, size: 16),
-          ],
-        ),
-      ),
-    );
-  }
-}
+// La clase _OptionCard ha sido eliminada de este archivo.

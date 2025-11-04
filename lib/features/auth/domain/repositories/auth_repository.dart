@@ -7,6 +7,9 @@ abstract class AuthRepository {
   // Retorna un stream que emite el estado del usuario cada vez que cambia
   Stream<UserEntity> get authStateChanges;
 
+  // Comprueba si hay un usuario en caché al iniciar la app.
+  Future<Either<Failure, UserEntity?>> getCachedUser();
+
   // Realiza el login. Retorna el usuario o una Falla.
   Future<Either<Failure, UserEntity>> login(String email, String password);
 

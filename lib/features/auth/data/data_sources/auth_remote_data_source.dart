@@ -1,181 +1,61 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:datakap/core/error/exceptions.dart';
+import 'package:datakap/core/network/api_endpoint.dart';
+import 'package:datakap/core/network/api_provider.dart';
+import 'package:datakap/core/network/auth_interceptor.dart';
 import 'package:datakap/features/auth/data/data_sources/auth_local_data_source.dart';
 import 'package:datakap/features/auth/data/models/user_model.dart';
 import 'package:datakap/features/auth/domain/entities/user_entity.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
+import 'package:get/get.dart';
 
-// Contrato para la capa de datos
 abstract class AuthRemoteDataSource {
   Stream<UserEntity> get authStateChanges;
   Future<UserModel> signIn(String email, String password);
   Future<void> signOut();
 }
 
-// Implementación usando Firebase
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
-  final FirebaseAuth auth;
-  final FirebaseFirestore firestore;
+  final AuthLocalDataSource localDataSource;
 
-  AuthRemoteDataSourceImpl({
-    required this.auth,
-    required this.firestore,
-    required this.localDataSource,
-  });
+  final StreamController<UserEntity> _authStateController = StreamController<UserEntity>.broadcast();
 
-  // Stream que escucha los cambios de autenticación de Firebase
+  AuthRemoteDataSourceImpl({required this.localDataSource});
+
   @override
-  Stream<UserEntity> get authStateChanges {
-    return auth.authStateChanges().asyncMap((user) async {
-      if (user == null) {
-        return UserEntity.empty;
-      }
+  Stream<UserEntity> get authStateChanges => _authStateController.stream;
 
-      try {
-        return _resolveUserModel(user);
-      } on FirebaseException catch (e, stackTrace) {
-        debugPrint(
-          'FirebaseException while resolving auth state for ${user.uid}: '
-          '${e.code} - ${e.message}\n$stackTrace',
-        );
-        return _fallbackToCachedUser(user.uid);
-      } catch (e, stackTrace) {
-        debugPrint(
-          'Unknown error while resolving auth state for ${user.uid}: '
-          '$e\n$stackTrace',
-        );
-        return _fallbackToCachedUser(user.uid);
-      }
-    });
-  }
-
-  // Iniciar sesión con email y contraseña
   @override
   Future<UserModel> signIn(String email, String password) async {
-    try {
-      final userCredential = await auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+    final response = await APIProvider.post(
+      ApiEndPoint.logIn,
+      data: {'email': email, 'password': password},
+      useAuth: false, // El login no necesita enviar un token.
+    ).request();
 
-      final user = userCredential.user;
-      if (user == null) {
-        throw StateError('Login exitoso pero usuario es nulo.');
-      }
+    if (response.success && response.data != null) {
+      final tokenManager = Get.find<AuthTokenManager>();
+      final String token = response.data['token'];
+      await tokenManager.setToken(token);
 
-      return _resolveUserModel(user);
-    } on TypeError catch (error, stackTrace) {
-      debugPrint(
-        'TypeError from signInWithEmailAndPassword: $error\n$stackTrace',
-      );
+      final userModel = UserModel.fromJson(response.data['user']);
+      await localDataSource.cacheUser(userModel);
 
-      final fallbackUser = auth.currentUser ?? await _waitForAuthenticatedUser();
-      if (fallbackUser != null) {
-        debugPrint(
-          'Recovered session using fallback user (${fallbackUser.uid}) '
-          'after TypeError.',
-        );
-        return _resolveUserModel(fallbackUser);
-      }
-
-      rethrow;
+      _authStateController.add(userModel);
+      return userModel;
+    } else {
+      throw ServerException(response.message);
     }
   }
 
-  // Función auxiliar para obtener el rol del usuario de Firestore
-  Future<Map<String, dynamic>?> _getUserData(String uid) async {
-    try {
-      final docSnapshot = await firestore.collection('users').doc(uid).get();
-      if (!docSnapshot.exists) {
-        return null;
-      }
-
-      return docSnapshot.data();
-    } on FirebaseException catch (e, stackTrace) {
-      debugPrint(
-        'FirebaseException while fetching role data for $uid: '
-        '${e.code} - ${e.message}\n$stackTrace',
-      );
-      return null;
-    } catch (e, stackTrace) {
-      debugPrint(
-        'Unknown error while fetching role data for $uid: '
-        '$e\n$stackTrace',
-      );
-      return null;
-    }
-  }
-
-  // Cerrar sesión
   @override
   Future<void> signOut() async {
-    await auth.signOut();
+    await APIProvider.post(ApiEndPoint.logOut).request();
+
+    final tokenManager = Get.find<AuthTokenManager>();
+    await tokenManager.setToken('');
+    await localDataSource.clearUser();
+    
+    _authStateController.add(UserEntity.empty);
   }
-
-  Future<UserModel> _resolveUserModel(User user) async {
-    final userData = await _getUserData(user.uid);
-
-    final model = UserModel.fromFirebaseUser(user, userData);
-    if (model != null) {
-      await localDataSource.cacheUser(model);
-      return model;
-    }
-
-    final cached = await localDataSource.getUserByUid(user.uid);
-    if (cached != null) {
-      return cached;
-    }
-
-    // Mientras se define la estrategia de roles, asumimos acceso de administrador.
-    final fallback = UserModel(
-      uid: user.uid,
-      email: user.email ?? '',
-      role: UserRole.admin,
-    );
-    await localDataSource.cacheUser(fallback);
-    return fallback;
-  }
-
-  Future<User?> _waitForAuthenticatedUser() async {
-    final recoveryStreams = <MapEntry<String, Stream<User?>>>[
-      MapEntry('authStateChanges', auth.authStateChanges()),
-      MapEntry('idTokenChanges', auth.idTokenChanges()),
-      MapEntry('userChanges', auth.userChanges()),
-    ];
-
-    for (final entry in recoveryStreams) {
-      try {
-        final user = await entry.value
-            .firstWhere((user) => user != null)
-            .timeout(const Duration(seconds: 3));
-        if (user != null) {
-          debugPrint(
-            'Recovered authenticated user from ${entry.key}: ${user.uid}',
-          );
-          return user;
-        }
-      } on TimeoutException catch (error, stackTrace) {
-        debugPrint(
-          'Timeout waiting for ${entry.key} after TypeError: '
-          '$error\n$stackTrace',
-        );
-      } catch (streamError, streamStackTrace) {
-        debugPrint(
-          'Error listening to ${entry.key} after TypeError: '
-          '$streamError\n$streamStackTrace',
-        );
-      }
-    }
-
-    return null;
-  }
-
-  Future<UserEntity> _fallbackToCachedUser(String uid) async {
-    final cached = await localDataSource.getUserByUid(uid);
-    return cached ?? UserEntity.empty;
-  }
-
-  final AuthLocalDataSource localDataSource;
 }

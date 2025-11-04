@@ -18,13 +18,13 @@ class AdminUserApi {
         message: 'No se encontró el usuario solicitado.',
       );
     }
-    return AdminUserModel.fromJson(doc.data()!);
+    return AdminUserModel.fromFirestore(doc);
   }
 
   Stream<List<AdminUserModel>> watchUsers() {
     return _collection.snapshots().map(
       (snapshot) => snapshot.docs
-          .map((doc) => AdminUserModel.fromJson(doc.data()))
+          .map((doc) => AdminUserModel.fromFirestore(doc))
           .toList(growable: false),
     );
   }

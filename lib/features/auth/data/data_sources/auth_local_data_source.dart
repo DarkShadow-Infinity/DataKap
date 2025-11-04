@@ -1,16 +1,16 @@
 import 'package:datakap/features/auth/data/models/user_model.dart';
 import 'package:hive/hive.dart';
 
+// Contrato para el almacenamiento local de la sesión de usuario.
 abstract class AuthLocalDataSource {
   Future<void> cacheUser(UserModel user);
-  Future<UserModel?> getUserByUid(String uid);
-  Future<UserModel?> getUserByEmail(String email);
+  Future<UserModel?> getCachedUser();
+  Future<void> clearUser();
 }
 
 class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   static const String _boxName = 'auth_cache';
-  static const String _usersByUidKey = 'users_by_uid';
-  static const String _usersByEmailKey = 'users_by_email';
+  static const String _userKey = 'current_user';
 
   Future<Box> _openBox() async {
     if (!Hive.isBoxOpen(_boxName)) {
@@ -22,40 +22,26 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   @override
   Future<void> cacheUser(UserModel user) async {
     final box = await _openBox();
-    final byUid = Map<String, dynamic>.from(
-      box.get(_usersByUidKey, defaultValue: <String, dynamic>{}),
-    );
-    final byEmail = Map<String, dynamic>.from(
-      box.get(_usersByEmailKey, defaultValue: <String, dynamic>{}),
-    );
-
-    final json = user.toJson();
-    byUid[user.uid] = json;
-    byEmail[user.email.toLowerCase()] = json;
-
-    await box.put(_usersByUidKey, byUid);
-    await box.put(_usersByEmailKey, byEmail);
+    // Guarda el usuario como un mapa JSON bajo una clave única.
+    await box.put(_userKey, user.toJson());
   }
 
   @override
-  Future<UserModel?> getUserByUid(String uid) async {
+  Future<UserModel?> getCachedUser() async {
     final box = await _openBox();
-    final byUid = Map<String, dynamic>.from(
-      box.get(_usersByUidKey, defaultValue: <String, dynamic>{}),
-    );
-    final data = byUid[uid] as Map<dynamic, dynamic>?;
-    if (data == null) return null;
-    return UserModel.fromJson(Map<String, dynamic>.from(data));
+    final data = box.get(_userKey);
+
+    if (data != null) {
+      // Si se encuentra un usuario, lo decodifica desde el mapa JSON.
+      return UserModel.fromJson(Map<String, dynamic>.from(data as Map));
+    }
+    return null;
   }
 
   @override
-  Future<UserModel?> getUserByEmail(String email) async {
+  Future<void> clearUser() async {
     final box = await _openBox();
-    final byEmail = Map<String, dynamic>.from(
-      box.get(_usersByEmailKey, defaultValue: <String, dynamic>{}),
-    );
-    final data = byEmail[email.toLowerCase()] as Map<dynamic, dynamic>?;
-    if (data == null) return null;
-    return UserModel.fromJson(Map<String, dynamic>.from(data));
+    // Elimina solo la clave del usuario, manteniendo otros datos si los hubiera.
+    await box.delete(_userKey);
   }
 }

@@ -1,4 +1,4 @@
-import 'package:datakap/core/app.dart';
+import 'package:datakap/core/app_routes.dart';
 import 'package:datakap/core/theme/app_theme.dart';
 import 'package:datakap/features/auth/domain/entities/user_entity.dart';
 import 'package:datakap/features/auth/presentation/manager/auth_controller.dart';

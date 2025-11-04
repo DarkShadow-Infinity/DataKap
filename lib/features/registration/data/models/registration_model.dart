@@ -31,36 +31,6 @@ class RegistrationModel extends RegistrationEntity {
     );
   }
 
-  factory RegistrationModel.fromEntity(RegistrationEntity entity) {
-    return RegistrationModel(
-      id: entity.id,
-      role: entity.role,
-      requiresPhoto: entity.requiresPhoto,
-      fields: entity.fields,
-      photoUrl: entity.photoUrl,
-      createdAt: entity.createdAt,
-      syncedAt: entity.syncedAt,
-      syncStatus: entity.syncStatus,
-      clientRequestId: entity.clientRequestId,
-      syncError: entity.syncError,
-    );
-  }
-
-  RegistrationEntity toEntity() {
-    return RegistrationEntity(
-      id: id,
-      role: role,
-      requiresPhoto: requiresPhoto,
-      fields: fields,
-      photoUrl: photoUrl,
-      createdAt: createdAt,
-      syncedAt: syncedAt,
-      syncStatus: syncStatus,
-      clientRequestId: clientRequestId,
-      syncError: syncError,
-    );
-  }
-
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -74,5 +44,31 @@ class RegistrationModel extends RegistrationEntity {
       'clientRequestId': clientRequestId,
       'syncError': syncError,
     };
+  }
+
+  RegistrationModel copyWith({
+    String? id,
+    String? role,
+    bool? requiresPhoto,
+    Map<String, dynamic>? fields,
+    String? photoUrl,
+    DateTime? createdAt,
+    DateTime? syncedAt,
+    String? syncStatus,
+    String? clientRequestId,
+    String? syncError,
+  }) {
+    return RegistrationModel(
+      id: id ?? this.id,
+      role: role ?? this.role,
+      requiresPhoto: requiresPhoto ?? this.requiresPhoto,
+      fields: fields ?? this.fields,
+      photoUrl: photoUrl ?? this.photoUrl,
+      createdAt: createdAt ?? this.createdAt,
+      syncedAt: syncedAt ?? this.syncedAt,
+      syncStatus: syncStatus ?? this.syncStatus,
+      clientRequestId: clientRequestId ?? this.clientRequestId,
+      syncError: syncError ?? this.syncError,
+    );
   }
 }
