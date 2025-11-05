@@ -49,20 +49,6 @@ dependencies:
   # Connectivity Plus: Para verificar el estado de la conexión (Offline First)
   connectivity_plus: ^5.0.2
 
-  # --- 2. FIREBASE Y REMOTO ---
-
-  # Core de Firebase
-  firebase_core: ^2.24.2
-
-  # Firestore (Base de datos NoSQL y tiempo real)
-  cloud_firestore: ^4.14.0
-
-  # Authentication (Para el login real con Email/Password/etc.)
-  firebase_auth: ^4.16.0
-
-  # Cloud Functions (Para la API Serverless segura)
-  cloud_functions: ^4.6.0
-
   # --- 3. ALMACENAMIENTO LOCAL Y SERIALIZACIÓN ---
 
   # Hive: Base de datos rápida de clave/valor (para el modo Offline First)

@@ -27,14 +27,9 @@ class UserModel extends UserEntity {
     switch (role.toLowerCase()) {
       case 'admin':
         return UserRole.admin;
-      case 'recabador':
-      case 'promovido':
-      case 'promotor':
+      case 'promoter':
         return UserRole.promoter;
-      case 'lider':
-      case 'líder':
-      case 'lideres':
-      case 'líderes':
+      case 'leader':
         return UserRole.leader;
       default:
         return UserRole.unknown;

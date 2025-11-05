@@ -1,5 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:datakap/features/admin_user_management/data/models/admin_user_model.dart';
+import 'package:dio/dio.dart';
 
 abstract class AdminUserRemoteDataSource {
   Stream<List<AdminUserModel>> watchUsers();
@@ -10,44 +10,35 @@ abstract class AdminUserRemoteDataSource {
 }
 
 class AdminUserRemoteDataSourceImpl implements AdminUserRemoteDataSource {
-  final FirebaseFirestore firestore;
+  final Dio dio;
 
-  AdminUserRemoteDataSourceImpl({required this.firestore});
-
-  CollectionReference<AdminUserModel> get _collection =>
-      firestore.collection('users').withConverter<AdminUserModel>(
-        fromFirestore: (snapshot, _) => AdminUserModel.fromFirestore(snapshot),
-        toFirestore: (user, _) => user.toJson(),
-      );
+  AdminUserRemoteDataSourceImpl({required this.dio});
 
   @override
   Stream<List<AdminUserModel>> watchUsers() {
-    return _collection.snapshots().map(
-          (snapshot) => snapshot.docs.map((doc) => doc.data()).toList(),
-    );
+    // This will need to be implemented with a WebSocket or similar
+    // for real-time updates. For now, it returns an empty stream.
+    return Stream.value([]);
   }
 
   @override
   Future<AdminUserModel> getUser(String id) async {
-    final snapshot = await _collection.doc(id).get();
-    if (!snapshot.exists) {
-      throw Exception('User not found');
-    }
-    return snapshot.data()!;
+    final response = await dio.get('/users/$id');
+    return AdminUserModel.fromJson(response.data);
   }
 
   @override
-  Future<void> createUser(AdminUserModel user) {
-    return _collection.doc(user.id).set(user);
+  Future<void> createUser(AdminUserModel user) async {
+    await dio.post('/users', data: user.toJson());
   }
 
   @override
-  Future<void> updateUser(AdminUserModel user) {
-    return _collection.doc(user.id).update(user.toJson());
+  Future<void> updateUser(AdminUserModel user) async {
+    await dio.put('/users/${user.id}', data: user.toJson());
   }
 
   @override
-  Future<void> deleteUser(String id) {
-    return _collection.doc(id).delete();
+  Future<void> deleteUser(String id) async {
+    await dio.delete('/users/$id');
   }
 }

@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:datakap/features/admin_user_management/domain/entities/admin_user_entity.dart';
 
 class AdminUserModel extends AdminUserEntity {
@@ -32,25 +31,25 @@ class AdminUserModel extends AdminUserEntity {
     );
   }
 
-  factory AdminUserModel.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>? ?? {};
+  factory AdminUserModel.fromJson(Map<String, dynamic> json) {
     return AdminUserModel(
-      id: doc.id,
-      email: data['email'] ?? '',
-      fullName: data['fullName'] ?? '',
-      phone: data['phone'] ?? '',
-      role: data['role'] ?? '',
-      goal: data['goal'] ?? 0,
-      verificationCode: data['verificationCode'] ?? '',
-      status: data['status'] ?? 'pending',
-      isActive: data['isActive'] ?? false,
-      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
+      id: json['id'] ?? '',
+      email: json['email'] ?? '',
+      fullName: json['fullName'] ?? '',
+      phone: json['phone'] ?? '',
+      role: json['role'] ?? '',
+      goal: json['goal'] ?? 0,
+      verificationCode: json['verificationCode'] ?? '',
+      status: json['status'] ?? 'pending',
+      isActive: json['isActive'] ?? false,
+      createdAt: DateTime.parse(json['createdAt']),
+      updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'email': email,
       'fullName': fullName,
       'phone': phone,
@@ -59,8 +58,8 @@ class AdminUserModel extends AdminUserEntity {
       'verificationCode': verificationCode,
       'status': status,
       'isActive': isActive,
-      'createdAt': FieldValue.serverTimestamp(),
-      'updatedAt': FieldValue.serverTimestamp(),
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt?.toIso8601String(),
     };
   }
 }

@@ -1,4 +1,4 @@
-import 'package:datakap/core/app_routes.dart'; // Importa el nuevo archivo de rutas
+import 'package:datakap/core/app_routes.dart';
 import 'package:get/get.dart';
 import 'package:datakap/features/auth/domain/entities/user_entity.dart';
 import 'package:datakap/features/auth/domain/repositories/auth_repository.dart';
@@ -31,6 +31,8 @@ class AuthController extends GetxController {
     isInitialCheckDone.value = true;
   }
 
+  // The AuthWrapper is now responsible for all navigation logic based on auth state.
+  // This controller's only job is to update the state.
   void _listenToAuthState() {
     _authRepository.authStateChanges.listen((user) {
       currentUser.value = user;
@@ -52,9 +54,12 @@ class AuthController extends GetxController {
 
     return result.fold(
       (failure) {
+        // The login call itself now triggers the authStateChanges stream on success.
+        // We only need to handle the failure case here.
         return failure.props.isNotEmpty ? failure.props[0] as String : 'Error desconocido';
       },
       (user) {
+        // On success, return null (no error). The stream listener will handle the state update.
         return null;
       },
     );
@@ -70,7 +75,10 @@ class AuthController extends GetxController {
           snackPosition: SnackPosition.BOTTOM
         );
       },
-      (_) {},
+      (_) {
+        // On success, the authStateChanges stream will emit an empty user,
+        // and the AuthWrapper will navigate to the login page.
+      },
     );
   }
 
