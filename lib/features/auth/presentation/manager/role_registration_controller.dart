@@ -38,87 +38,38 @@ class RoleRegistrationController extends GetxController {
   final isSubmitting = false.obs;
   final hasPhoto = false.obs;
   final isOnline = true.obs;
+  final capturedImagePath = ''.obs; // To hold the path of the captured image
 
   late final Map<String, TextEditingController> _controllers;
 
   Map<String, TextEditingController> get controllers => _controllers;
 
-  String get roleLabel =>
-      role == UserRole.leader ? 'líder' : 'promovido';
+  String get roleLabel => role == UserRole.leader ? 'líder' : 'promovido';
 
   StreamSubscription<bool>? _connectivitySubscription;
   final SubmitRegistrationUseCase _submitRegistrationUseCase;
   final NetworkInfo _networkInfo;
 
   static const List<RegistrationFieldConfig> fieldConfigs = [
-    RegistrationFieldConfig(
-      key: 'claveElectoral',
-      label: 'Clave electoral',
-      hint: 'Ingrese la clave tal como aparece en la credencial',
-    ),
-    RegistrationFieldConfig(
-      key: 'sexo',
-      label: 'Sexo',
-    ),
-    RegistrationFieldConfig(
-      key: 'nombre',
-      label: 'Nombre',
-    ),
-    RegistrationFieldConfig(
-      key: 'apellidoPaterno',
-      label: 'Apellido paterno',
-    ),
-    RegistrationFieldConfig(
-      key: 'apellidoMaterno',
-      label: 'Apellido materno',
-    ),
-    RegistrationFieldConfig(
-      key: 'direccion',
-      label: 'Dirección',
-      hint: 'Calle, número y colonia',
-    ),
-    RegistrationFieldConfig(
-      key: 'codigoPostal',
-      label: 'Código postal',
-      keyboardType: TextInputType.number,
-    ),
-    RegistrationFieldConfig(
-      key: 'vigencia',
-      label: 'Vigencia',
-      hint: 'AAAA',
-      keyboardType: TextInputType.number,
-    ),
-    RegistrationFieldConfig(
-      key: 'estado',
-      label: 'Estado',
-    ),
-    RegistrationFieldConfig(
-      key: 'municipio',
-      label: 'Municipio',
-    ),
-    RegistrationFieldConfig(
-      key: 'localidad',
-      label: 'Localidad',
-    ),
-    RegistrationFieldConfig(
-      key: 'telefono',
-      label: 'Teléfono',
-      keyboardType: TextInputType.phone,
-    ),
-    RegistrationFieldConfig(
-      key: 'whatsapp',
-      label: 'WhatsApp',
-      keyboardType: TextInputType.phone,
-    ),
+    RegistrationFieldConfig(key: 'claveElectoral', label: 'Clave electoral'),
+    RegistrationFieldConfig(key: 'sexo', label: 'Sexo'),
+    RegistrationFieldConfig(key: 'nombre', label: 'Nombre'),
+    RegistrationFieldConfig(key: 'apellidoPaterno', label: 'Apellido paterno'),
+    RegistrationFieldConfig(key: 'apellidoMaterno', label: 'Apellido materno'),
+    RegistrationFieldConfig(key: 'direccion', label: 'Dirección'),
+    RegistrationFieldConfig(key: 'codigoPostal', label: 'Código postal', keyboardType: TextInputType.number),
+    RegistrationFieldConfig(key: 'vigencia', label: 'Vigencia', keyboardType: TextInputType.number),
+    RegistrationFieldConfig(key: 'estado', label: 'Estado'),
+    RegistrationFieldConfig(key: 'municipio', label: 'Municipio'),
+    RegistrationFieldConfig(key: 'localidad', label: 'Localidad'),
+    RegistrationFieldConfig(key: 'telefono', label: 'Teléfono', keyboardType: TextInputType.phone),
+    RegistrationFieldConfig(key: 'whatsapp', label: 'WhatsApp', keyboardType: TextInputType.phone),
   ];
 
   @override
   void onInit() {
     super.onInit();
-    _controllers = {
-      for (final config in fieldConfigs)
-        config.key: TextEditingController(),
-    };
+    _controllers = { for (final config in fieldConfigs) config.key: TextEditingController() };
     _initializeConnectivity();
   }
 
@@ -131,39 +82,37 @@ class RoleRegistrationController extends GetxController {
     super.onClose();
   }
 
-  Future<void> _initializeConnectivity() async {
-    isOnline.value = await _networkInfo.isConnected;
-    _connectivitySubscription =
-        _networkInfo.onStatusChange.listen((status) => isOnline.value = status);
+  void updateFormFromScan(Map<String, dynamic> result) {
+    final data = result['data'] as Map<String, String>;
+    final imagePath = result['imagePath'] as String?;
+
+    if (imagePath != null) {
+      capturedImagePath.value = imagePath;
+      hasPhoto.value = true;
+    }
+
+    _controllers['nombre']?.text = data['name'] ?? '';
+    _controllers['apellidoPaterno']?.text = data['lastName'] ?? '';
+    _controllers['apellidoMaterno']?.text = data['motherLastName'] ?? '';
+    _controllers['direccion']?.text = data['address'] ?? '';
+    _controllers['claveElectoral']?.text = data['electorKey'] ?? '';
   }
 
-  void capturePhoto() {
-    hasPhoto.value = true;
-    Get.snackbar(
-      'Foto capturada',
-      'La imagen se guardará junto con el registro.',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+  Future<void> _initializeConnectivity() async {
+    isOnline.value = await _networkInfo.isConnected;
+    _connectivitySubscription = _networkInfo.onStatusChange.listen((status) => isOnline.value = status);
   }
 
   void removePhoto() {
     hasPhoto.value = false;
+    capturedImagePath.value = '';
   }
 
   Future<void> submitForm() async {
-    final isValid = formKey.currentState?.validate() ?? false;
-    if (!isValid) {
-      return;
-    }
+    if (!(formKey.currentState?.validate() ?? false)) return;
 
     if (requiresPhoto && !hasPhoto.value) {
-      Get.snackbar(
-        'Foto requerida',
-        'Captura la foto de la credencial INE antes de continuar.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.shade100,
-        colorText: Colors.black,
-      );
+      Get.snackbar('Foto requerida', 'Captura la foto de la credencial INE antes de continuar.', snackPosition: SnackPosition.BOTTOM);
       return;
     }
 
@@ -173,23 +122,13 @@ class RoleRegistrationController extends GetxController {
         role: role,
         fields: _buildFieldsMap(),
         requiresPhoto: requiresPhoto,
-        photoPath: requiresPhoto ? 'ine_photo_${DateTime.now().millisecondsSinceEpoch}' : null,
+        photoPath: requiresPhoto ? capturedImagePath.value : null,
       );
 
       final result = await _submitRegistrationUseCase.execute(request);
       result.fold(
-        (failure) {
-          Get.snackbar(
-            'Error al registrar',
-            failure.message,
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.redAccent,
-            colorText: Colors.white,
-          );
-        },
-        (registration) {
-          _handleSuccessfulSubmission(registration);
-        },
+        (failure) => Get.snackbar('Error al registrar', failure.message, snackPosition: SnackPosition.BOTTOM),
+        (registration) => _handleSuccessfulSubmission(registration),
       );
     } finally {
       isSubmitting.value = false;
@@ -197,36 +136,19 @@ class RoleRegistrationController extends GetxController {
   }
 
   Map<String, String> _buildFieldsMap() {
-    return {
-      for (final entry in _controllers.entries)
-        entry.key: entry.value.text.trim(),
-      'rol': role.name,
-    };
+    return { for (final entry in _controllers.entries) entry.key: entry.value.text.trim(), 'rol': role.name };
   }
 
   void _handleSuccessfulSubmission(RegistrationEntity registration) {
-    for (final controller in _controllers.values) {
-      controller.clear();
-    }
-
-    if (requiresPhoto) {
-      hasPhoto.value = false;
-    }
+    for (final controller in _controllers.values) controller.clear();
+    removePhoto();
 
     final title = registration.isSynced ? 'Registro sincronizado' : 'Registro guardado';
     final message = registration.isSynced
         ? 'El ${roleLabel.toLowerCase()} se registró y sincronizó correctamente.'
         : 'El ${roleLabel.toLowerCase()} se guardó en el dispositivo. Podrás sincronizarlo cuando tengas internet.';
 
-    Get.snackbar(
-      title,
-      message,
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor:
-          registration.isSynced ? Colors.green.shade600 : Colors.orange.shade600,
-      colorText: Colors.white,
-      duration: const Duration(seconds: 4),
-    );
+    Get.snackbar(title, message, snackPosition: SnackPosition.BOTTOM, backgroundColor: registration.isSynced ? Colors.green.shade600 : Colors.orange.shade600, colorText: Colors.white);
   }
 }
 
@@ -235,9 +157,7 @@ class IneRegistrationController extends RoleRegistrationController {
     required super.role,
     required super.submitRegistrationUseCase,
     required super.networkInfo,
-  }) : super(
-          requiresPhoto: true,
-        );
+  }) : super(requiresPhoto: true);
 }
 
 class ManualRegistrationController extends RoleRegistrationController {
@@ -245,7 +165,5 @@ class ManualRegistrationController extends RoleRegistrationController {
     required super.role,
     required super.submitRegistrationUseCase,
     required super.networkInfo,
-  }) : super(
-          requiresPhoto: false,
-        );
+  }) : super(requiresPhoto: false);
 }

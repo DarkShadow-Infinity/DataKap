@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:datakap/core/theme/app_theme.dart';
 import 'package:datakap/features/auth/domain/entities/user_entity.dart';
 import 'package:datakap/features/auth/presentation/manager/role_registration_controller.dart';
+import 'package:datakap/features/auth/presentation/pages/scanner/id_scanner_page.dart';
 import 'package:datakap/features/auth/presentation/widgets/registration_form_fields.dart';
 
 class IneRegistrationPage extends GetView<IneRegistrationController> {
@@ -73,14 +76,14 @@ class IneRegistrationPage extends GetView<IneRegistrationController> {
                             : AppColors.background,
                       ),
                       child: Center(
-                        child: controller.hasPhoto.value
-                            ? Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: const [
-                                  Icon(Icons.check_circle, color: AppColors.accent, size: 48),
-                                  SizedBox(height: 12),
-                                  Text('Foto registrada correctamente'),
-                                ],
+                        child: controller.hasPhoto.value && controller.capturedImagePath.value.isNotEmpty
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(14), // Match the container's border radius
+                                child: Image.file(
+                                  File(controller.capturedImagePath.value),
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                ),
                               )
                             : Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -93,35 +96,16 @@ class IneRegistrationPage extends GetView<IneRegistrationController> {
                       ),
                     )),
                 const SizedBox(height: 16),
-                Obx(() => Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: controller.capturePhoto,
-                            icon: Icon(
-                              controller.hasPhoto.value
-                                  ? Icons.refresh
-                                  : Icons.camera_alt,
-                            ),
-                            label: Text(
-                              controller.hasPhoto.value
-                                  ? 'Capturar nuevamente'
-                                  : 'Capturar foto',
-                            ),
-                          ),
-                        ),
-                        if (controller.hasPhoto.value) ...[
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: controller.removePhoto,
-                              icon: const Icon(Icons.delete),
-                              label: const Text('Eliminar foto'),
-                            ),
-                          ),
-                        ],
-                      ],
-                    )),
+                ElevatedButton.icon(
+                  onPressed: () async {
+                    final result = await Get.to(() => const IDScannerPage());
+                    if (result != null && result is Map<String, dynamic>) {
+                      controller.updateFormFromScan(result);
+                    }
+                  },
+                  icon: const Icon(Icons.document_scanner_outlined),
+                  label: const Text('Scan INE with Camera'),
+                ),
                 const SizedBox(height: 32),
                 Text(
                   'Completa los datos del ${_roleLabel(controller.role)}',
@@ -131,49 +115,23 @@ class IneRegistrationPage extends GetView<IneRegistrationController> {
                       ?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
-                Obx(() {
-                  if (controller.isOnline.value) {
-                    return const SizedBox.shrink();
-                  }
-                  return Container(
-                    padding: const EdgeInsets.all(12),
-                    margin: const EdgeInsets.only(bottom: 16),
-                    decoration: BoxDecoration(
-                      color: AppColors.warning.withAlpha((255 * 0.18).round()),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Icon(Icons.wifi_off, color: AppColors.warning),
-                        SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            'El registro se guardará en el dispositivo porque no hay conexión. Podrás sincronizarlo más tarde.',
-                            style: TextStyle(color: AppColors.warning),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }),
                 RegistrationFormFields(controller: controller),
                 const SizedBox(height: 24),
-                Obx(() => ElevatedButton.icon(
-                      onPressed: controller.isSubmitting.value
-                          ? null
-                          : controller.submitForm,
-                      icon: controller.isSubmitting.value
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.send),
-                      label: Text(controller.isSubmitting.value
-                          ? 'Enviando registro...'
-                          : 'Enviar registro'),
-                    )),
+                ElevatedButton.icon(
+                  onPressed: controller.isSubmitting.value
+                      ? null
+                      : controller.submitForm,
+                  icon: controller.isSubmitting.value
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.send),
+                  label: Text(controller.isSubmitting.value
+                      ? 'Enviando registro...'
+                      : 'Enviar registro'),
+                ),
               ],
             ),
           ),

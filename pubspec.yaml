@@ -49,6 +49,12 @@ dependencies:
   # Connectivity Plus: Para verificar el estado de la conexión (Offline First)
   connectivity_plus: ^5.0.2
 
+  # --- 2. CÁMARA Y RECONOCIMIENTO DE TEXTO ---
+  google_ml_kit: ^0.20.0
+  camera: ^0.10.0+1
+  permission_handler: ^11.0.1
+  google_mlkit_smart_reply: ^0.13.0
+
   # --- 3. ALMACENAMIENTO LOCAL Y SERIALIZACIÓN ---
 
   # Hive: Base de datos rápida de clave/valor (para el modo Offline First)
