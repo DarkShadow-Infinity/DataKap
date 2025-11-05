@@ -52,6 +52,8 @@ enum ApiEndPoint {
   getCatalogLocations('catalogs/locations'),
   /// GET /catalogs/roles
   getCatalogRoles('catalogs/roles'),
+  /// GET /catalogs/postal-code/{postal_code}
+  getPostalCodeInfo('catalogs/postal-code/%s'),
 
   // === Health Check ===
   /// GET /health

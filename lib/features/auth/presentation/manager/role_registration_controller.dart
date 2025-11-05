@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:datakap/core/network/network_info.dart';
 import 'package:datakap/features/auth/domain/entities/user_entity.dart';
+import 'package:datakap/features/postal_code/domain/use_cases/get_info_by_postal_code_use_case.dart';
 import 'package:datakap/features/registration/domain/entities/registration_entity.dart';
 import 'package:datakap/features/registration/domain/use_cases/registration_request.dart';
 import 'package:datakap/features/registration/domain/use_cases/submit_registration_use_case.dart';
@@ -27,8 +28,10 @@ class RoleRegistrationController extends GetxController {
     required this.role,
     required this.requiresPhoto,
     required SubmitRegistrationUseCase submitRegistrationUseCase,
+    required GetInfoByPostalCodeUseCase getInfoByPostalCodeUseCase,
     required NetworkInfo networkInfo,
   })  : _submitRegistrationUseCase = submitRegistrationUseCase,
+        _getInfoByPostalCodeUseCase = getInfoByPostalCodeUseCase,
         _networkInfo = networkInfo;
 
   final UserRole role;
@@ -38,7 +41,12 @@ class RoleRegistrationController extends GetxController {
   final isSubmitting = false.obs;
   final hasPhoto = false.obs;
   final isOnline = true.obs;
-  final capturedImagePath = ''.obs; // To hold the path of the captured image
+  final capturedImagePath = ''.obs;
+
+  // For postal code lookup
+  final localities = <String>[].obs;
+  final isFetchingPostalCode = false.obs;
+  final selectedLocality = ''.obs;
 
   late final Map<String, TextEditingController> _controllers;
 
@@ -48,6 +56,7 @@ class RoleRegistrationController extends GetxController {
 
   StreamSubscription<bool>? _connectivitySubscription;
   final SubmitRegistrationUseCase _submitRegistrationUseCase;
+  final GetInfoByPostalCodeUseCase _getInfoByPostalCodeUseCase;
   final NetworkInfo _networkInfo;
 
   static const List<RegistrationFieldConfig> fieldConfigs = [
@@ -58,7 +67,6 @@ class RoleRegistrationController extends GetxController {
     RegistrationFieldConfig(key: 'apellidoMaterno', label: 'Apellido materno'),
     RegistrationFieldConfig(key: 'direccion', label: 'Dirección'),
     RegistrationFieldConfig(key: 'codigoPostal', label: 'Código postal', keyboardType: TextInputType.number),
-    RegistrationFieldConfig(key: 'vigencia', label: 'Vigencia', keyboardType: TextInputType.number),
     RegistrationFieldConfig(key: 'estado', label: 'Estado'),
     RegistrationFieldConfig(key: 'municipio', label: 'Municipio'),
     RegistrationFieldConfig(key: 'localidad', label: 'Localidad'),
@@ -70,16 +78,40 @@ class RoleRegistrationController extends GetxController {
   void onInit() {
     super.onInit();
     _controllers = { for (final config in fieldConfigs) config.key: TextEditingController() };
+    _controllers['codigoPostal']!.addListener(_onPostalCodeChanged);
     _initializeConnectivity();
   }
 
   @override
   void onClose() {
+    _controllers['codigoPostal']!.removeListener(_onPostalCodeChanged);
     for (final controller in _controllers.values) {
       controller.dispose();
     }
     _connectivitySubscription?.cancel();
     super.onClose();
+  }
+
+  void _onPostalCodeChanged() async {
+    final cp = _controllers['codigoPostal']!.text;
+    if (cp.length == 5) {
+      isFetchingPostalCode.value = true;
+      final result = await _getInfoByPostalCodeUseCase(cp);
+      result.fold(
+        (failure) {
+          // Handle error
+        },
+        (info) {
+          _controllers['estado']!.text = info.estado;
+          _controllers['municipio']!.text = info.municipio;
+          localities.assignAll(info.asentamientos);
+          if (localities.isNotEmpty) {
+            selectedLocality.value = localities.first;
+          }
+        },
+      );
+      isFetchingPostalCode.value = false;
+    }
   }
 
   void updateFormFromScan(Map<String, dynamic> result) {
@@ -136,11 +168,13 @@ class RoleRegistrationController extends GetxController {
   }
 
   Map<String, String> _buildFieldsMap() {
-    return { for (final entry in _controllers.entries) entry.key: entry.value.text.trim(), 'rol': role.name };
+    return { for (final entry in _controllers.entries) entry.key: entry.value.text.trim(), 'rol': role.name, 'localidad': selectedLocality.value };
   }
 
   void _handleSuccessfulSubmission(RegistrationEntity registration) {
-    for (final controller in _controllers.values) controller.clear();
+    for (final controller in _controllers.values) {
+      controller.clear();
+    }
     removePhoto();
 
     final title = registration.isSynced ? 'Registro sincronizado' : 'Registro guardado';
@@ -157,6 +191,7 @@ class IneRegistrationController extends RoleRegistrationController {
     required super.role,
     required super.submitRegistrationUseCase,
     required super.networkInfo,
+    required super.getInfoByPostalCodeUseCase,
   }) : super(requiresPhoto: true);
 }
 
@@ -165,5 +200,6 @@ class ManualRegistrationController extends RoleRegistrationController {
     required super.role,
     required super.submitRegistrationUseCase,
     required super.networkInfo,
+    required super.getInfoByPostalCodeUseCase,
   }) : super(requiresPhoto: false);
 }

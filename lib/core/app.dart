@@ -25,6 +25,10 @@ import 'package:datakap/features/auth/presentation/pages/ine_registration_page.d
 import 'package:datakap/features/auth/presentation/pages/login_page.dart';
 import 'package:datakap/features/auth/presentation/pages/manual_registration_page.dart';
 import 'package:datakap/features/auth/presentation/pages/role_options_page.dart';
+import 'package:datakap/features/postal_code/data/data_sources/postal_code_remote_data_source.dart';
+import 'package:datakap/features/postal_code/data/repositories/postal_code_repository_impl.dart';
+import 'package:datakap/features/postal_code/domain/repositories/postal_code_repository.dart';
+import 'package:datakap/features/postal_code/domain/use_cases/get_info_by_postal_code_use_case.dart';
 import 'package:datakap/features/registration/data/data_sources/registration_local_data_source.dart';
 import 'package:datakap/features/registration/data/data_sources/registration_remote_data_source.dart';
 import 'package:datakap/features/registration/data/data_sources/registration_remote_data_source_impl.dart';
@@ -54,7 +58,6 @@ class AppBindings extends Bindings {
   @override
   void dependencies() {
     Get.lazyPut<AuthTokenManager>(() => AuthTokenManager(), fenix: true);
-    // Register Dio globally
     Get.lazyPut<Dio>(() => Dio(), fenix: true);
     Get.lazyPut<Connectivity>(() => Connectivity(), fenix: true);
     Get.lazyPut<NetworkInfo>(() => NetworkInfoImpl(Get.find()), fenix: true);
@@ -74,9 +77,12 @@ class AppBindings extends Bindings {
       () => RegistrationRemoteDataSourceImpl(),
       fenix: true,
     );
-    // Correctly inject Dio into AdminUserRemoteDataSourceImpl
     Get.lazyPut<AdminUserRemoteDataSource>(
       () => AdminUserRemoteDataSourceImpl(dio: Get.find<Dio>()),
+      fenix: true,
+    );
+    Get.lazyPut<PostalCodeRemoteDataSource>(
+      () => PostalCodeRemoteDataSourceImpl(),
       fenix: true,
     );
     Get.lazyPut<AuthRepository>(
@@ -102,6 +108,10 @@ class AppBindings extends Bindings {
       ),
       fenix: true,
     );
+    Get.lazyPut<PostalCodeRepository>(
+      () => PostalCodeRepositoryImpl(remoteDataSource: Get.find()),
+      fenix: true,
+    );
     Get.lazyPut(() => CreateAdminUserUseCase(Get.find()), fenix: true);
     Get.lazyPut(() => GetAdminUserUseCase(Get.find()), fenix: true);
     Get.lazyPut(() => UpdateAdminUserUseCase(Get.find()), fenix: true);
@@ -115,6 +125,7 @@ class AppBindings extends Bindings {
     Get.lazyPut(() => GetPendingRegistrationsUseCase(Get.find()), fenix: true);
     Get.lazyPut(() => SyncPendingRegistrationsUseCase(Get.find()), fenix: true);
     Get.lazyPut(() => SubmitRegistrationUseCase(Get.find()), fenix: true);
+    Get.lazyPut(() => GetInfoByPostalCodeUseCase(Get.find()), fenix: true);
     Get.put<AuthController>(AuthController(Get.find()), permanent: true);
   }
 }
@@ -161,6 +172,7 @@ class AppPages {
             role: role,
             submitRegistrationUseCase: Get.find(),
             networkInfo: Get.find(),
+            getInfoByPostalCodeUseCase: Get.find(),
           ),
         );
       }),
@@ -175,6 +187,7 @@ class AppPages {
             role: role,
             submitRegistrationUseCase: Get.find(),
             networkInfo: Get.find(),
+            getInfoByPostalCodeUseCase: Get.find(),
           ),
         );
       }),

@@ -194,12 +194,7 @@
       "promoter"
     ]
   },
-  "GET /health": {
-    "status": "ok",
-    "timestamp": "2025-11-02T12:00:00Z",
-    "version": "1.0.0"
-  },
-  "Dipomex - Get Postal Code": {
+  "GET /catalogs/postal-code/{postal_code}": {
     "error": false,
     "message": "Procesamiento correcto.",
     "codigo_postal": {
@@ -218,29 +213,9 @@
       ]
     }
   },
-  "Error 401 - Unauthorized": {
-    "detail": "INVALID_TOKEN"
-  },
-  "Error 403 - Forbidden": {
-    "detail": "FORBIDDEN"
-  },
-  "Error 404 - Not Found": {
-    "detail": "NOT_FOUND"
-  },
-  "Error 422 - Unprocessable Content": {
-    "detail": [
-      {
-        "type": "string_too_short",
-        "loc": [
-          "body",
-          "password"
-        ],
-        "msg": "String should have at least 8 characters",
-        "input": "123",
-        "ctx": {
-          "min_length": 8
-        }
-      }
-    ]
+  "GET /health": {
+    "status": "ok",
+    "timestamp": "2025-11-02T12:00:00Z",
+    "version": "1.0.0"
   }
 }

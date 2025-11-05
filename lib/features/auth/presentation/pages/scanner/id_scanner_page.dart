@@ -1,10 +1,8 @@
 import 'dart:io';
-
 import 'package:camera/camera.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class IDScannerPage extends StatefulWidget {
@@ -115,29 +113,17 @@ class _IDScannerPageState extends State<IDScannerPage> {
       var rotationCompensation =
           (sensorOrientation + controller!.value.deviceOrientation.index * 90) % 360;
       switch (rotationCompensation) {
-        case 0:
-          rotation = InputImageRotation.rotation0deg;
-          break;
-        case 90:
-          rotation = InputImageRotation.rotation90deg;
-          break;
-        case 180:
-          rotation = InputImageRotation.rotation180deg;
-          break;
-        case 270:
-          rotation = InputImageRotation.rotation270deg;
-          break;
-        default:
-          rotation = InputImageRotation.rotation0deg;
+        case 0: rotation = InputImageRotation.rotation0deg; break;
+        case 90: rotation = InputImageRotation.rotation90deg; break;
+        case 180: rotation = InputImageRotation.rotation180deg; break;
+        case 270: rotation = InputImageRotation.rotation270deg; break;
+        default: rotation = InputImageRotation.rotation0deg;
       }
     }
     if (rotation == null) return null;
 
     final format = InputImageFormatValue.fromRawValue(image.format.raw);
-    if (format == null ||
-        (Platform.isAndroid && format != InputImageFormat.nv21) ||
-        (Platform.isIOS && format != InputImageFormat.bgra8888)) return null;
-
+    if (format == null || (Platform.isAndroid && format != InputImageFormat.nv21) || (Platform.isIOS && format != InputImageFormat.bgra8888)) return null;
     if (image.planes.length != 1) return null;
     final plane = image.planes.first;
 
@@ -163,9 +149,9 @@ class _IDScannerPageState extends State<IDScannerPage> {
     controller?.startImageStream(_processCameraImage);
     if (mounted) {
       setState(() {
-        _capturedImage = null;
-        _isCardDetected = false;
-      });
+      _capturedImage = null;
+      _isCardDetected = false;
+    });
     }
   }
 
@@ -177,8 +163,9 @@ class _IDScannerPageState extends State<IDScannerPage> {
       final inputImage = InputImage.fromFilePath(_capturedImage!.path);
       final recognizedText = await _textRecognizer.processImage(inputImage);
       final data = _parseIneText(recognizedText.text);
-
+      
       Get.back(result: {'data': data, 'imagePath': _capturedImage!.path});
+
     } catch (e) {
       Get.snackbar('Error', 'Failed to process image: $e');
     } finally {
@@ -223,14 +210,10 @@ class _IDScannerPageState extends State<IDScannerPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-          title: const Text('Scan INE'),
-          actions: [
-            if (_capturedImage == null && controller != null)
-              IconButton(
-                  icon: Icon(_currentFlashMode == FlashMode.off ? Icons.flash_off : Icons.flash_on),
-                  onPressed: _toggleFlash),
-          ]),
+      appBar: AppBar(title: const Text('Scan INE'), actions: [
+        if (_capturedImage == null && controller != null)
+          IconButton(icon: Icon(_currentFlashMode == FlashMode.off ? Icons.flash_off : Icons.flash_on), onPressed: _toggleFlash),
+      ]),
       body: _buildBody(),
       floatingActionButton: _buildFloatingActionButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
@@ -242,54 +225,34 @@ class _IDScannerPageState extends State<IDScannerPage> {
       return Stack(fit: StackFit.expand, children: [
         Center(child: Image.file(File(_capturedImage!.path))),
         if (_isProcessing)
-          Container(
-              color: Colors.black.withOpacity(0.5),
-              child: const Center(child: CircularProgressIndicator())),
+          Container(color: const Color.fromRGBO(0, 0, 0, 0.5), child: const Center(child: CircularProgressIndicator())),
       ]);
     }
-    if (controller == null || !controller!.value.isInitialized)
-      return const Center(child: CircularProgressIndicator());
-    return Stack(
-        fit: StackFit.expand, children: [CameraPreview(controller!), _buildOverlay()]);
+    if (controller == null || !controller!.value.isInitialized) return const Center(child: CircularProgressIndicator());
+    return Stack(fit: StackFit.expand, children: [CameraPreview(controller!), _buildOverlay()]);
   }
 
   Widget? _buildFloatingActionButton() {
     if (_capturedImage != null) {
       return Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-        FloatingActionButton.extended(
-            onPressed: _retakePhoto,
-            icon: const Icon(Icons.refresh),
-            label: const Text('Retake')),
-        FloatingActionButton.extended(
-            onPressed: _processImageAndGoBack,
-            icon: const Icon(Icons.check),
-            label: const Text('Use Photo')),
+        FloatingActionButton.extended(onPressed: _retakePhoto, icon: const Icon(Icons.refresh), label: const Text('Retake')),
+        FloatingActionButton.extended(onPressed: _processImageAndGoBack, icon: const Icon(Icons.check), label: const Text('Use Photo')),
       ]);
     }
-    return FloatingActionButton(
-        onPressed: _capturePhoto,
-        backgroundColor: _isCardDetected ? Colors.green : null,
-        child: const Icon(Icons.camera_alt));
+    return FloatingActionButton(onPressed: _capturePhoto, backgroundColor: _isCardDetected ? Colors.green : null, child: const Icon(Icons.camera_alt));
   }
 
   Widget _buildOverlay() {
     final color = _isCardDetected ? Colors.green : Colors.white;
     return Center(
       child: Container(
-        width: Get.width * 0.9,
-        height: Get.width * 0.9 * (1 / 1.586),
-        decoration: BoxDecoration(
-            border: Border.all(color: color, width: _isCardDetected ? 4.0 : 2.0),
-            borderRadius: BorderRadius.circular(12.0)),
+        width: Get.width * 0.9, height: Get.width * 0.9 * (1 / 1.586),
+        decoration: BoxDecoration(border: Border.all(color: color, width: _isCardDetected ? 4.0 : 2.0), borderRadius: BorderRadius.circular(12.0)),
         child: Center(
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.5),
-                borderRadius: BorderRadius.circular(8)),
-            child: Text(_isCardDetected ? 'Card Detected' : 'Align ID Card Here',
-                style: TextStyle(
-                    color: color, fontSize: 18, fontWeight: FontWeight.bold)),
+            decoration: BoxDecoration(color: const Color.fromRGBO(0, 0, 0, 0.5), borderRadius: BorderRadius.circular(8)),
+            child: Text(_isCardDetected ? 'Card Detected' : 'Align ID Card Here', style: TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.bold)),
           ),
         ),
       ),
